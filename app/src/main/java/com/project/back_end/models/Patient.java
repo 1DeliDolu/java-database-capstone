@@ -1,53 +1,283 @@
 package com.project.back_end.models;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+/**
+ * Patient Model Class
+ * 
+ * Represents a patient in the Smart Clinic Management System.
+ * Captures personal details including contact information and address.
+ * Patients book appointments and receive treatment through this system.
+ * 
+ * JPA Entity mapped to the 'patient' table in MySQL database.
+ */
+@Entity
 public class Patient {
-// @Entity annotation:
-//    - Marks the class as a JPA entity, meaning it represents a table in the database.
-//    - Required for persistence frameworks (e.g., Hibernate) to map the class to a database table.
 
-// 1. 'id' field:
-//    - Type: private Long
-//    - Description:
-//      - Represents the unique identifier for each patient.
-//      - The @Id annotation marks it as the primary key.
-//      - The @GeneratedValue(strategy = GenerationType.IDENTITY) annotation auto-generates the ID value when a new record is inserted into the database.
+    // ===== Fields =====
 
-// 2. 'name' field:
-//    - Type: private String
-//    - Description:
-//      - Represents the patient's full name.
-//      - The @NotNull annotation ensures that the patient's name is required.
-//      - The @Size(min = 3, max = 100) annotation ensures that the name length is between 3 and 100 characters. 
-//      - Provides validation for correct input and user experience.
+    /**
+     * Unique identifier for the Patient entity
+     * 
+     * Auto-generated primary key using identity strategy (auto-increment).
+     * Each patient is uniquely identified by this id.
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    /**
+     * Patient's full name
+     * 
+     * Required field with length constraints.
+     * Must be between 3 and 100 characters for meaningful validation.
+     */
+    @NotNull(message = "Patient name cannot be null")
+    @Size(min = 3, max = 100, message = "Patient name must be between 3 and 100 characters")
+    private String name;
+
+    /**
+     * Patient's email address
+     * 
+     * Required field with email format validation.
+     * Used for communication, password recovery, and login authentication.
+     * Must match standard email format.
+     * Should be unique per patient to prevent duplicate accounts.
+     */
+    @NotNull(message = "Email cannot be null")
+    @Email(message = "Email must be valid")
+    private String email;
+
+    /**
+     * Patient's password for authentication
+     * 
+     * Required field with minimum length constraint.
+     * Hashed password for secure storage.
+     * Marked as WRITE_ONLY: can be accepted in POST requests but will not be 
+     * exposed in JSON API responses (GET requests).
+     * Minimum 6 characters for reasonable complexity.
+     */
+    @NotNull(message = "Password cannot be null")
+    @Size(min = 6, message = "Password must be at least 6 characters")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
+
+    /**
+     * Patient's phone number
+     * 
+     * Required field with phone format validation.
+     * Must be exactly 10 digits (no special characters or spaces).
+     * Used for appointment notifications and emergency contact.
+     */
+    @NotNull(message = "Phone number cannot be null")
+    @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be exactly 10 digits")
+    private String phone;
+
+    /**
+     * Patient's address
+     * 
+     * Required field with maximum length constraint.
+     * Cannot exceed 255 characters.
+     * Used for mailing, medical records, and emergency contact information.
+     */
+    @NotNull(message = "Address cannot be null")
+    @Size(max = 255, message = "Address must not exceed 255 characters")
+    private String address;
 
 
-// 3. 'email' field:
-//    - Type: private String
-//    - Description:
-//      - Represents the patient's email address.
-//      - The @NotNull annotation ensures that an email address must be provided.
-//      - The @Email annotation validates that the email address follows a valid email format (e.g., patient@example.com).
+    // ===== Constructors =====
 
-// 4. 'password' field:
-//    - Type: private String
-//    - Description:
-//      - Represents the patient's password for login authentication.
-//      - The @NotNull annotation ensures that a password must be provided.
-//      - The @Size(min = 6) annotation ensures that the password must be at least 6 characters long.
+    /**
+     * No-argument constructor
+     * 
+     * Required by JPA for entity instantiation during database operations.
+     */
+    public Patient() {
+    }
 
-// 5. 'phone' field:
-//    - Type: private String
-//    - Description:
-//      - Represents the patient's phone number.
-//      - The @NotNull annotation ensures that a phone number must be provided.
-//      - The @Pattern(regexp = "^[0-9]{10}$") annotation validates that the phone number must be exactly 10 digits long.
+    /**
+     * Parameterized constructor with core information
+     * 
+     * Creates a new Patient with essential information.
+     * 
+     * @param name the patient's full name
+     * @param email the patient's email address
+     * @param password the patient's password
+     * @param phone the patient's phone number
+     * @param address the patient's home address
+     */
+    public Patient(String name, String email, String password, String phone, String address) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.phone = phone;
+        this.address = address;
+    }
 
-// 6. 'address' field:
-//    - Type: private String
-//    - Description:
-//      - Represents the patient's address.
-//      - The @NotNull annotation ensures that the address must be provided.
-//      - The @Size(max = 255) annotation ensures that the address does not exceed 255 characters in length, providing validation for the address input.
+    /**
+     * Full parameterized constructor
+     * 
+     * Creates a new Patient with all fields including id.
+     * 
+     * @param id the patient id
+     * @param name the patient's full name
+     * @param email the patient's email address
+     * @param password the patient's password
+     * @param phone the patient's phone number
+     * @param address the patient's home address
+     */
+    public Patient(Long id, String name, String email, String password, String phone, String address) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.phone = phone;
+        this.address = address;
+    }
+
+
+    // ===== Getters and Setters =====
+
+    /**
+     * Get the patient's unique identifier
+     * 
+     * @return the patient id
+     */
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * Set the patient's unique identifier
+     * 
+     * @param id the patient id to set
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /**
+     * Get the patient's full name
+     * 
+     * @return the patient's name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Set the patient's full name
+     * 
+     * @param name the name to set
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Get the patient's email address
+     * 
+     * @return the email address
+     */
+    public String getEmail() {
+        return email;
+    }
+
+    /**
+     * Set the patient's email address
+     * 
+     * @param email the email address to set
+     */
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    /**
+     * Get the patient's password
+     * 
+     * Note: This field is marked as WRITE_ONLY in JSON serialization,
+     * so it will not be exposed in API responses.
+     * 
+     * @return the patient's password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * Set the patient's password
+     * 
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    /**
+     * Get the patient's phone number
+     * 
+     * @return the phone number
+     */
+    public String getPhone() {
+        return phone;
+    }
+
+    /**
+     * Set the patient's phone number
+     * 
+     * @param phone the phone number to set
+     */
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    /**
+     * Get the patient's address
+     * 
+     * @return the patient's home address
+     */
+    public String getAddress() {
+        return address;
+    }
+
+    /**
+     * Set the patient's address
+     * 
+     * @param address the address to set
+     */
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+
+    // ===== Object Methods =====
+
+    /**
+     * String representation of the Patient
+     * 
+     * Note: Password is intentionally excluded for security.
+     * 
+     * @return string representation of Patient
+     */
+    @Override
+    public String toString() {
+        return "Patient{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", address='" + address + '\'' +
+                '}';
+    }
+}
 
 
 // 7. Getters and Setters:
