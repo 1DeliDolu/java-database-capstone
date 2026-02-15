@@ -211,15 +211,3 @@ export async function cancelAppointment(appointmentId, token) {
     };
   }
 }
-    return {
-      success: response.ok,
-      message: data.message || "Something went wrong"
-    };
-  } catch (error) {
-    console.error("Error while booking appointment:", error);
-    return {
-      success: false,
-      message: "Network error. Please try again later."
-    };
-  }
-}
