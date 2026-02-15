@@ -174,12 +174,14 @@
     background-color: rgba(0,0,0,0.6);
   }
   
-  .modal-content {
+.modal-content {
     background-color: white;
     margin: auto;
     padding: 30px;
     border-radius: 10px;
-    width: 400px;
+    width: min(92vw, 760px);
+    max-height: 85vh;
+    overflow-y: auto;
     position: relative;
   }
   
@@ -205,6 +207,23 @@
 
   .dashboard-btn{
     width: 100%;
+  }
+
+  .availability-container {
+    margin-bottom: 16px;
+  }
+
+  .checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    gap: 8px 14px;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 680px) {
+    .checkbox-group {
+      grid-template-columns: 1fr;
+    }
   }
 
   .input-field {
@@ -379,4 +398,3 @@
   margin-right: 0.5rem;
   accent-color: #015c5db8; 
 }
-

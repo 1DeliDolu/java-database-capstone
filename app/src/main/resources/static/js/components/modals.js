@@ -124,6 +124,23 @@ function generateAddDoctorForm() {
       </div>
     </div>
     <button class="dashboard-btn" id="saveDoctorBtn">Save Doctor</button>
+    <div class="add-doctor-list">
+      <h3>Doctor List</h3>
+      <div class="add-doctor-list-wrap">
+        <table class="add-doctor-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Specialty</th>
+              <th>Email</th>
+              <th>Phone</th>
+            </tr>
+          </thead>
+          <tbody id="addDoctorListBody"></tbody>
+        </table>
+      </div>
+    </div>
   `;
 }
 
@@ -249,6 +266,9 @@ function attachFormListeners(type) {
         const saveDoctorBtn = document.getElementById("saveDoctorBtn");
         if (saveDoctorBtn && typeof window.adminAddDoctor === "function") {
           saveDoctorBtn.addEventListener("click", window.adminAddDoctor);
+        }
+        if (typeof window.renderAddDoctorList === "function") {
+          window.renderAddDoctorList();
         }
         break;
 

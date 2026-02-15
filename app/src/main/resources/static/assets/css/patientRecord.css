@@ -1,0 +1,55 @@
+.main-content {
+  background-color: #cfe4e4;
+  background-image: url("../images/defineRole/index.png");
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 38% auto;
+}
+
+.main-content h2 {
+  text-align: center;
+  margin: 6px 0 26px;
+  font-size: 48px;
+  color: #0f3c3f;
+}
+
+#patientTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(242, 247, 247, 0.88);
+}
+
+#patientTable thead th {
+  background: rgba(167, 197, 199, 0.5);
+  color: #0d6164;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+#patientTable td {
+  text-align: center;
+  font-size: 14px;
+}
+
+#patientTable tbody tr:nth-child(even) {
+  background: rgba(121, 168, 171, 0.45);
+}
+
+#patientTable tbody tr:nth-child(odd) {
+  background: rgba(242, 247, 247, 0.92);
+}
+
+#patientTable .prescription-btn {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+@media (max-width: 860px) {
+  .main-content {
+    background-size: 60% auto;
+    background-position: right top;
+  }
+}

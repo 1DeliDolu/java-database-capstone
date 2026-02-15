@@ -36,9 +36,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.log("getPrescription :: ", response);
 
       // Now, check if the prescription exists in the response and access it from the array
-      if (response.prescription && response.prescription.length > 0) {
-        const existingPrescription = response.prescription[0]; // Access first prescription object
-        patientNameInput.value = existingPrescription.patientName || YOU;
+      if (response && response.prescription && response.prescription.length > 0) {
+        const existingPrescription = response.prescription[0];
+        patientNameInput.value = existingPrescription.patientName || "You";
         medicinesInput.value = existingPrescription.medication || "";
         dosageInput.value = existingPrescription.dosage || "";
         notesInput.value = existingPrescription.doctorNotes || "";
@@ -57,7 +57,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     savePrescriptionBtn.style.display = "none";  // Hide the save button
   }
   // Save prescription on button click
-  savePrescriptionBtn.addEventListener('click', async (e) => {
+  if (savePrescriptionBtn) {
+    savePrescriptionBtn.addEventListener('click', async (e) => {
     e.preventDefault();
 
     const prescription = {
@@ -76,5 +77,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
       alert("❌ Failed to save prescription. " + message);
     }
-  });
+    });
+  }
 });

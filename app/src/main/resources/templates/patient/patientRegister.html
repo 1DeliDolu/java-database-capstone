@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" th:href="@{/assets/images/logo/logo.png}">
+    <title>Patient Register</title>
+    <style>
+        :root { --bg:#f3f7f8; --card:#ffffff; --text:#1f2937; --muted:#6b7280; --primary:#0f766e; --primary-hover:#115e59; --border:#d1d5db; --danger:#b91c1c; --success:#166534; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Arial, sans-serif; min-height: 100vh; display: grid; place-items: center; background: linear-gradient(135deg,#eaf4f6 0%,var(--bg) 100%); color: var(--text); }
+        .card { width: min(92vw,460px); background: var(--card); border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
+        h1 { margin: 0 0 8px; font-size: 24px; }
+        p { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+        label { display: block; margin: 12px 0 6px; font-size: 14px; font-weight: 600; }
+        input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 15px; }
+        input:focus { outline: 2px solid #99f6e4; border-color: var(--primary); }
+        .actions { margin-top: 16px; display: grid; gap: 8px; }
+        button { border: 0; border-radius: 8px; padding: 11px 12px; font-size: 15px; cursor: pointer; }
+        .primary { background: var(--primary); color: #fff; }
+        .primary:hover { background: var(--primary-hover); }
+        .secondary { background: #e5e7eb; color: #111827; }
+        .secondary:hover { background: #d1d5db; }
+        #feedback { min-height: 18px; margin-top: 10px; font-size: 13px; }
+        .error { color: var(--danger); }
+        .success { color: var(--success); }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <h1>Patient Register</h1>
+        <p>Create your account.</p>
+
+        <form id="patientRegisterForm">
+            <label for="name">Full Name</label>
+            <input id="name" type="text" required>
+
+            <label for="email">Email</label>
+            <input id="email" type="email" required autocomplete="username">
+
+            <label for="password">Password</label>
+            <input id="password" type="password" required autocomplete="new-password">
+
+            <label for="phone">Phone</label>
+            <input id="phone" type="tel" required>
+
+            <label for="address">Address</label>
+            <input id="address" type="text" required>
+
+            <div class="actions">
+                <button class="primary" type="submit">Create Account</button>
+                <button class="secondary" type="button" id="loginBtn">Go to Login</button>
+            </div>
+            <div id="feedback"></div>
+        </form>
+    </main>
+
+    <script>
+        const form = document.getElementById('patientRegisterForm');
+        const feedback = document.getElementById('feedback');
+        const loginBtn = document.getElementById('loginBtn');
+
+        loginBtn.addEventListener('click', () => {
+            window.location.href = '/patient/login';
+        });
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            feedback.textContent = '';
+            feedback.className = '';
+
+            const payload = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value,
+                phone: document.getElementById('phone').value.trim(),
+                address: document.getElementById('address').value.trim()
+            };
+
+            try {
+                const response = await fetch('/patient', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    feedback.textContent = data.message || 'Registration failed.';
+                    feedback.className = 'error';
+                    return;
+                }
+
+                feedback.textContent = 'Registration successful. Redirecting to login...';
+                feedback.className = 'success';
+                setTimeout(() => {
+                    window.location.href = '/patient/login';
+                }, 1200);
+            } catch (error) {
+                feedback.textContent = 'Network error. Please try again.';
+                feedback.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>

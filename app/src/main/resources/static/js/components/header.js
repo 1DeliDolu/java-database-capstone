@@ -53,19 +53,21 @@ function renderHeader() {
   // Add role-specific header content
   if (role === "admin") {
     headerContent += `
+      <button id="homeBtn" class="adminBtn">Dashboard</button>
       <button id="addDocBtn" class="adminBtn">Add Doctor</button>
       <a href="#" onclick="logout(); return false;">Logout</a>`;
   } else if (role === "doctor") {
     headerContent += `
-      <button id="homeBtn" class="adminBtn">Home</button>
+      <button id="homeBtn" class="adminBtn">Dashboard</button>
       <a href="#" onclick="logout(); return false;">Logout</a>`;
   } else if (role === "patient") {
     headerContent += `
+      <button id="homeBtn" class="adminBtn">Dashboard</button>
       <button id="patientLogin" class="adminBtn">Login</button>
       <button id="patientSignup" class="adminBtn">Sign Up</button>`;
   } else if (role === "loggedPatient") {
     headerContent += `
-      <button id="homeBtn" class="adminBtn">Home</button>
+      <button id="homeBtn" class="adminBtn">Dashboard</button>
       <button id="appointmentsBtn" class="adminBtn">Appointments</button>
       <a href="#" onclick="logoutPatient(); return false;">Logout</a>`;
   }
@@ -88,13 +90,14 @@ function renderHeader() {
  */
 function attachHeaderButtonListeners() {
   const role = localStorage.getItem("userRole");
+  const token = localStorage.getItem("token");
 
   // Login button for patients
   const loginBtn = document.getElementById("patientLogin");
   if (loginBtn) {
     loginBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      openModal("patientLogin");
+      window.location.href = "/login?role=patient";
     });
   }
 
@@ -103,7 +106,7 @@ function attachHeaderButtonListeners() {
   if (signupBtn) {
     signupBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      openModal("patientSignup");
+      window.location.href = "/register";
     });
   }
 
@@ -122,11 +125,13 @@ function attachHeaderButtonListeners() {
     homeBtn.addEventListener("click", (e) => {
       e.preventDefault();
       if (role === "doctor") {
-        window.location.href = "/templates/doctor/doctorDashboard.html";
-      } else if (role === "loggedPatient") {
+        window.location.href = token ? `/doctorDashboard/${token}` : "/login?role=doctor";
+      } else if (role === "patient") {
         window.location.href = "/pages/patientDashboard.html";
+      } else if (role === "loggedPatient") {
+        window.location.href = "/pages/loggedPatientDashboard.html";
       } else if (role === "admin") {
-        window.location.href = "/templates/admin/adminDashboard.html";
+        window.location.href = token ? `/adminDashboard/${token}` : "/login?role=admin";
       }
     });
   }

@@ -13,7 +13,7 @@
 
 import { API_BASE_URL } from "../config/config.js";
 
-const PRESCRIPTION_API = API_BASE_URL + "/api/prescriptions";
+const PRESCRIPTION_API = API_BASE_URL + "/prescription";
 
 /**
  * Save a new prescription
@@ -39,11 +39,10 @@ export async function savePrescription(prescription, token) {
     }
 
     // Step 2: Send POST request to save prescription
-    const response = await fetch(PRESCRIPTION_API, {
+    const response = await fetch(`${PRESCRIPTION_API}/${encodeURIComponent(token)}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(prescription),
     });
@@ -85,11 +84,10 @@ export async function getPrescription(appointmentId, token) {
     }
 
     // Step 2: Send GET request to fetch prescription
-    const response = await fetch(`${PRESCRIPTION_API}/${appointmentId}`, {
+    const response = await fetch(`${PRESCRIPTION_API}/${encodeURIComponent(appointmentId)}/${encodeURIComponent(token)}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
     });
 

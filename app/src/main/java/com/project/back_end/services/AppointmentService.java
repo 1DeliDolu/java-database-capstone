@@ -178,7 +178,13 @@ public class AppointmentService {
             LocalDateTime endOfDay = LocalDateTime.of(date, LocalTime.MAX);
             
             // Fetch appointments for the doctor on the specified date
-            if (pname != null && !pname.isEmpty()) {
+            boolean applyPatientNameFilter = pname != null
+                    && !pname.isBlank()
+                    && !"null".equalsIgnoreCase(pname)
+                    && !"all".equalsIgnoreCase(pname)
+                    && !"undefined".equalsIgnoreCase(pname);
+
+            if (applyPatientNameFilter) {
                 // Filter by patient name if provided
                 appointments = appointmentRepository.findByDoctorIdAndPatient_NameContainingIgnoreCaseAndAppointmentTimeBetween(
                     doctor.getId(), pname, startOfDay, endOfDay);
@@ -192,6 +198,51 @@ public class AppointmentService {
             response.put("appointments", appointments);
             return response;
             
+        } catch (Exception e) {
+            response.put("message", "Error retrieving appointments: " + e.getMessage());
+            response.put("appointments", appointments);
+            return response;
+        }
+    }
+
+    /**
+     * Retrieves all appointments for a doctor, optionally filtered by patient name.
+     *
+     * @param pname Patient name to filter by (optional)
+     * @param token The authorization token
+     * @return Map containing the list of appointments
+     */
+    @Transactional
+    public Map<String, Object> getAllAppointmentsForDoctor(String pname, String token) {
+        Map<String, Object> response = new HashMap<>();
+        List<Appointment> appointments = new ArrayList<>();
+
+        try {
+            String doctorEmail = tokenService.extractEmail(token);
+            var doctor = doctorRepository.findByEmail(doctorEmail);
+
+            if (doctor == null) {
+                response.put("message", "Doctor not found");
+                response.put("appointments", appointments);
+                return response;
+            }
+
+            boolean applyPatientNameFilter = pname != null
+                    && !pname.isBlank()
+                    && !"null".equalsIgnoreCase(pname)
+                    && !"all".equalsIgnoreCase(pname)
+                    && !"undefined".equalsIgnoreCase(pname);
+
+            if (applyPatientNameFilter) {
+                appointments = appointmentRepository.findByDoctorIdAndPatientNameContainingIgnoreCaseOrderByAppointmentTimeAsc(
+                        doctor.getId(), pname);
+            } else {
+                appointments = appointmentRepository.findByDoctorIdOrderByAppointmentTimeAsc(doctor.getId());
+            }
+
+            response.put("message", "All appointments retrieved successfully");
+            response.put("appointments", appointments);
+            return response;
         } catch (Exception e) {
             response.put("message", "Error retrieving appointments: " + e.getMessage());
             response.put("appointments", appointments);

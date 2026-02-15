@@ -5,19 +5,20 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.project.back_end.DTO.Login;
 import com.project.back_end.models.Patient;
 import com.project.back_end.services.PatientService;
 import com.project.back_end.services.Service;
 
-@RestController
+@Controller
 @RequestMapping("/patient")
 public class PatientController {
 
@@ -30,10 +31,21 @@ public class PatientController {
     }
 
     @GetMapping
+    @ResponseBody
     public ResponseEntity<Map<String, String>> patientEndpointInfo() {
         Map<String, String> response = new HashMap<>();
         response.put("message", "This is an API endpoint. Use POST /patient for signup, POST /patient/login for login, and GET /patient/{token} for details.");
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/login")
+    public String patientLoginPage() {
+        return "redirect:/login?role=patient";
+    }
+
+    @GetMapping("/register")
+    public String patientRegisterPage() {
+        return "redirect:/register";
     }
 
     /**
@@ -43,6 +55,7 @@ public class PatientController {
      * @return ResponseEntity with patient details or error message
      */
     @GetMapping("/{token}")
+    @ResponseBody
     public ResponseEntity<Map<String, Object>> getPatient(@PathVariable("token") String token) {
         Map<String, Object> response = new HashMap<>();
         
@@ -64,6 +77,7 @@ public class PatientController {
      * @return ResponseEntity with success or error message
      */
     @PostMapping
+    @ResponseBody
     public ResponseEntity<Map<String, String>> createPatient(@RequestBody Patient patient) {
         Map<String, String> response = new HashMap<>();
         
@@ -99,6 +113,7 @@ public class PatientController {
      * @return ResponseEntity with token if login is successful, error message otherwise
      */
     @PostMapping("/login")
+    @ResponseBody
     public ResponseEntity<Map<String, String>> login(@RequestBody Login login) {
         return service.validatePatientLogin(login);
     }
@@ -111,6 +126,7 @@ public class PatientController {
      * @return ResponseEntity with list of appointments or error message
      */
     @GetMapping("/{id}/{token}")
+    @ResponseBody
     public ResponseEntity<Map<String, Object>> getPatientAppointment(
             @PathVariable("id") Long id,
             @PathVariable("token") String token) {
@@ -137,6 +153,7 @@ public class PatientController {
      * @return ResponseEntity with filtered appointments or error message
      */
     @GetMapping("/filter/{condition}/{name}/{token}")
+    @ResponseBody
     public ResponseEntity<Map<String, Object>> filterPatientAppointment(
             @PathVariable("condition") String condition,
             @PathVariable("name") String name,

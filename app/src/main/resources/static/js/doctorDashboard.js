@@ -14,10 +14,9 @@
 
 // Import required modules
 import { getAllAppointments } from "./services/appointmentRecordService.js";
-import { createPatientRow } from "./components/patientRows.js";
 
 // Initialize variables
-let selectedDate = getTodayDate();
+let selectedDate = "";
 let patientName = null;
 const token = localStorage.getItem("token");
 const patientTableBody = document.getElementById("patientTableBody");
@@ -38,13 +37,12 @@ function getTodayDate() {
  * Initialize dashboard when DOM is loaded
  */
 document.addEventListener("DOMContentLoaded", function () {
-  // Set date picker to today's date
   const datePicker = document.getElementById("datePicker");
   if (datePicker) {
-    datePicker.value = selectedDate;
+    datePicker.value = "";
   }
 
-  // Load appointments for today on page load
+  // Load all appointments on page load
   loadAppointments();
 
   // Attach search bar listener
@@ -123,7 +121,7 @@ async function loadAppointments() {
   try {
     // Step 1: Validate token
     if (!token) {
-      showErrorMessage("Authentication token not found. Please log in again.");
+      window.location.href = "/login?role=doctor";
       return;
     }
 
@@ -148,20 +146,8 @@ async function loadAppointments() {
     // Step 5: Render each appointment as a table row
     appointments.forEach((appointment) => {
       try {
-        // Build patient object from appointment data
-        const patientData = {
-          id: appointment.patientId || appointment.patient?.id,
-          name:
-            appointment.patientName || appointment.patient?.name || "Unknown",
-          phone: appointment.patient?.phone || "N/A",
-          email: appointment.patient?.email || "N/A",
-        };
-
-        // Create and append patient row
-        const patientRow = createPatientRow(appointment, patientData);
-        if (patientTableBody && patientRow) {
-          patientTableBody.appendChild(patientRow);
-        }
+        const patientRow = createDoctorAppointmentRow(appointment);
+        if (patientTableBody && patientRow) patientTableBody.appendChild(patientRow);
       } catch (error) {
         console.error("Error creating patient row:", error, appointment);
       }
@@ -180,11 +166,13 @@ function showNoAppointmentsMessage() {
 
   const row = document.createElement("tr");
   const cell = document.createElement("td");
-  cell.colSpan = 5; // Adjust based on number of columns
+  cell.colSpan = 6; // number of columns
   cell.style.textAlign = "center";
   cell.style.padding = "20px";
   cell.style.color = "#666";
-  cell.textContent = "No appointments found for the selected date.";
+  cell.textContent = selectedDate
+    ? "No appointments found for the selected date."
+    : "No appointments found.";
 
   row.appendChild(cell);
   patientTableBody.appendChild(row);
@@ -199,7 +187,7 @@ function showErrorMessage(message) {
 
   const row = document.createElement("tr");
   const cell = document.createElement("td");
-  cell.colSpan = 5; // Adjust based on number of columns
+  cell.colSpan = 6; // number of columns
   cell.style.textAlign = "center";
   cell.style.padding = "20px";
   cell.style.color = "red";
@@ -213,3 +201,58 @@ function showErrorMessage(message) {
  * Export functions for use in other modules if needed
  */
 export { loadAppointments, getTodayDate };
+
+function createDoctorAppointmentRow(appointment) {
+  const tr = document.createElement("tr");
+  const patientName = appointment.patientName || appointment.patient?.name || "Unknown";
+  const phone = appointment.patient?.phone || "N/A";
+  const email = appointment.patient?.email || "N/A";
+  const rawDateTime = appointment.appointmentTime || "";
+  const { dateText, timeText } = formatDateTime(rawDateTime, appointment.appointmentDate, appointment.appointmentTimeOnly);
+  const statusText = getStatusText(appointment.status);
+
+  tr.innerHTML = `
+    <td>${escapeHtml(patientName)}</td>
+    <td>${escapeHtml(phone)}</td>
+    <td>${escapeHtml(email)}</td>
+    <td>${escapeHtml(dateText)}</td>
+    <td>${escapeHtml(timeText)}</td>
+    <td>${escapeHtml(statusText)}</td>
+  `;
+
+  return tr;
+}
+
+function formatDateTime(isoDateTime, fallbackDate, fallbackTime) {
+  if (isoDateTime) {
+    const date = new Date(isoDateTime);
+    if (!Number.isNaN(date.getTime())) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+      return { dateText: `${year}-${month}-${day}`, timeText: `${hours}:${minutes}` };
+    }
+  }
+
+  return {
+    dateText: fallbackDate ? String(fallbackDate) : "N/A",
+    timeText: fallbackTime ? String(fallbackTime).slice(0, 5) : "N/A",
+  };
+}
+
+function getStatusText(status) {
+  if (Number(status) === 1) return "Completed";
+  if (Number(status) === 2) return "Cancelled";
+  return "Scheduled";
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}

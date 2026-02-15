@@ -1,53 +1,164 @@
-/* this is the style sheet file for index.htlm  */
+* {
+  box-sizing: border-box;
+}
 
-/* 
-**Global Reset (`*`)**
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: Arial, sans-serif;
+  color: #17383b;
+}
 
-* Remove all default margin and padding.
-* Use `border-box` for sizing to include padding and border in element size.
+body {
+  display: flex;
+  flex-direction: column;
+  background: #e8f2f3;
+}
 
-**Base (`html, body`)**
+.topbar {
+  height: 58px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #d5d5d5;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
 
-* Set height to 100% for full viewport layout.
-* Use the `'Roboto'` sans-serif font for modern, clean typography.
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-**Layout Wrapper (`.wrapper`)**
+.brand-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
 
-* Use a vertical flexbox layout.
-* Ensure the wrapper covers at least the full height of the screen (`min-height: 100vh`).
+.brand-title {
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 700;
+  color: #2c2c2c;
+}
 
-**Heading (`h2`)**
+.hero {
+  flex: 1;
+  min-height: 600px;
+  display: grid;
+  place-items: center;
+  background-image: url('/assets/images/defineRole/index.png');
+  background-size: cover;
+  background-position: center;
+  padding: 32px 16px;
+}
 
-* Set a large font size (`48px`) for prominence.
-* Add a bottom margin of `50px` for spacing.
-* Use a dark teal color (`#003e3e`).
-* Make the font bold and use a blended font stack (`'Alegreya', 'Roboto', sans-serif`) for elegant styling.
+.role-panel {
+  text-align: center;
+}
 
-**Main Section (`.main-content`)**
+h1 {
+  margin: 0 0 30px;
+  font-size: clamp(42px, 4.2vw, 66px);
+  color: #0a3a3e;
+}
 
-* Allow the section to grow to fill space with `flex-grow: 1`.
-* Add `40px` of internal padding.
-* Center content both horizontally and vertically using `justify-content` and `align-items`.
-* Display items in a column direction.
-* Center all text.
-* Apply a full-screen background image with:
+h1 span {
+  color: #a53f2d;
+}
 
-  * `cover` size
-  * `center` positioning
-  * no repeat
-  * `fixed` attachment to keep image still during scroll
+.actions {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
 
-**Buttons (`button`)**
+.actions button {
+  width: clamp(220px, 24vw, 320px);
+  height: 54px;
+  border: 0;
+  border-radius: 15px;
+  background: #1c6267;
+  color: #fff;
+  font-size: 33px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
 
-* Style with a teal green background (`#015c5d`) and white text.
-* Remove borders and round the corners (`12px`).
-* Use `10px 20px` padding and set width to `200px`.
-* Add a top margin of `10px` for spacing.
-* Enable pointer cursor and readable font size (`16px`).
-* On hover, change background color to bold red (`#A62B1F`).
+.actions button:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
 
-**Dashboard Buttons (`.dashboard-btn`)**
+.site-footer {
+  background: #f2f2f2;
+  border-top: 1px solid #dfdfdf;
+}
 
-* Use the same base green background (`#015c5d`) as the default button.
-* On hover, darken the background to deep teal (`#003e3e`) for visual feedback.
- */
+.footer-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  min-height: 130px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 24px;
+}
+
+.footer-brand img {
+  width: 74px;
+  height: 74px;
+}
+
+.footer-column h2 {
+  margin: 0 0 8px;
+  font-size: 37px;
+  color: #202433;
+}
+
+.footer-column a {
+  color: #2f3140;
+  font-size: 32px;
+  text-decoration: none;
+}
+
+.footer-column a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .brand-title {
+    font-size: 24px;
+  }
+
+  h1 {
+    font-size: clamp(34px, 8vw, 46px);
+  }
+
+  .actions button {
+    width: min(76vw, 320px);
+    height: 50px;
+    font-size: 24px;
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 14px;
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+
+  .footer-column h2 {
+    font-size: 24px;
+  }
+
+  .footer-column a {
+    font-size: 20px;
+  }
+}

@@ -1,94 +1,212 @@
-/*this is the style sheet for the adminDashboard. */
+* {
+  box-sizing: border-box;
+}
 
-/* 
-Global Reset (`*`)
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: Arial, sans-serif;
+}
 
-* Purpose: Ensure consistent layout across all browsers.
-* Properties:
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
 
-  * `margin: 0` — removes default outer spacing from all elements.
-  * `padding: 0` — removes default inner spacing.
-  * `box-sizing: border-box` — ensures padding and borders are included within the total width/height of elements.
+.main-content {
+  flex: 1;
+  padding: 24px;
+  background: #eef6f7;
+}
 
-Base HTML & Body (`html, body`)
+h2 {
+  margin: 0 0 18px;
+  color: #0f3c3f;
+}
 
-* Purpose: Establish a full-height layout and apply a standard font across the page.
-* Properties:
+.toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
 
-  * `height: 100%` — allows containers to stretch to the full viewport height.
-  * `font-family: Arial, sans-serif` — applies a clean, readable sans-serif font.
+.searchBar {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
 
-Main Layout Wrapper (`.wrapper`)
+.refresh-btn {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: #0f766e;
+  color: #fff;
+  cursor: pointer;
+}
 
-* Purpose: Create a flexible, vertical layout that fills the entire screen.
-* Properties:
+#content {
+  display: block;
+  padding: 0;
+}
 
-  * `display: flex` — enables flexbox for layout control.
-  * `flex-direction: column` — stacks children vertically.
-  * `min-height: 100vh` — ensures the wrapper always covers full screen height.
+.table-section {
+  margin-bottom: 20px;
+  background: #fff;
+  border: 1px solid #dbe3e8;
+  border-radius: 10px;
+  overflow: hidden;
+}
 
-Section Heading (`h2`)
+.table-section h3 {
+  margin: 0;
+  padding: 10px 12px;
+  background: #e7f1f3;
+  color: #133d42;
+  font-size: 16px;
+}
 
-* Purpose: Style the headings prominently for section separation.
-* Properties:
+.table-wrap {
+  overflow-x: auto;
+}
 
-  * `font-size: 32px` — makes the heading large and noticeable.
-  * `font-weight: bold` — emphasizes text.
-  * `margin-bottom: 50px` — creates space below the heading.
-  * `color: #003e3e` — uses a strong teal for visual anchoring.
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
 
-Main Content Section (`.main-content`)
+th,
+td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  font-size: 13px;
+  text-align: left;
+  vertical-align: top;
+}
 
-* Purpose: Layout the main content with padding and a background image.
-* Properties:
+th {
+  background: #f8fafc;
+  color: #334155;
+}
 
-  * `flex-grow: 1` — lets the content fill the available vertical space.
-  * `padding: 40px` — adds internal spacing around content.
-  * `display: flex` and `flex-direction: column` — organizes content in a vertical stack.
-  * `text-align: center` — centers the text.
-  * `background-image: url("index.png")` — sets a full-screen dashboard background.
-  * `background-size: cover` — ensures the image covers the whole section.
-  * `background-position: center` — centers the image.
-  * `background-repeat: no-repeat` — avoids tiling the image.
-  * `background-attachment: fixed` — fixes the image while scrolling.
+.action-btn {
+  border: 0;
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin-right: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
 
-Primary Button (`button`)
+.view-btn {
+  background: #e0f2fe;
+  color: #075985;
+}
 
-* Purpose: Design prominent, interactive buttons for main actions.
+.edit-btn {
+  background: #dcfce7;
+  color: #166534;
+}
 
-* Properties:
+.delete-btn {
+  background: #fee2e2;
+  color: #991b1b;
+}
 
-  * `background-color: #A62B1F` — sets a bold red color.
-  * `color: white` — makes text stand out.
-  * `border: none` — removes any outline/border.
-  * `border-radius: 12px` — creates rounded corners.
-  * `padding: 10px 20px` — gives space inside the button.
-  * `margin-top: 20px` — adds spacing above the button.
-  * `width: 200px` — ensures consistent button width.
-  * `cursor: pointer` — shows a hand icon on hover.
-  * `font-size: 16px` — makes the text readable.
+.adminBtn {
+  background-color: #f4f4f4;
+  color: #333;
+  font-weight: bold;
+  width: 110px;
+  padding: 10px 0;
+  border: none;
+  cursor: pointer;
+}
 
-* On Hover:
+.section-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 6px 0 14px;
+  flex-wrap: wrap;
+}
 
-  * Retains the same red background to maintain branding.
+.tab-btn {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  color: #334155;
+  cursor: pointer;
+  font-size: 13px;
+}
 
-Admin Button (`.adminBtn`)
+.tab-btn.active {
+  background: #0f766e;
+  color: #ffffff;
+  border-color: #0f766e;
+}
 
-* Purpose: Provide a secondary button style for admin-specific actions.
+.table-section.hidden {
+  display: none;
+}
 
-* Properties:
+.view-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 10px 14px;
+}
 
-  * `background-color: #f4f4f4` — uses a light grey background.
-  * `color: #333` — uses dark text for contrast.
-  * `font-weight: bold` — emphasizes text.
-  * `width: 110px` — smaller, compact width.
-  * `padding: 10px 0` — vertical padding only.
-  * `border: none` — clean look.
-  * `cursor: pointer` — indicates it's clickable.
+.view-field label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: #475569;
+}
 
-* On Hover**:
+.view-field .input-field[readonly] {
+  background: #f8fafc;
+  color: #0f172a;
+}
 
-   Changes text color to `#A62B1F` for brand consistency while keeping the background same.
+@media (max-width: 700px) {
+  .view-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
+.add-doctor-list {
+  margin-top: 18px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 12px;
+}
 
-*/
+.add-doctor-list h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #0f3c3f;
+}
+
+.add-doctor-list-wrap {
+  max-height: 220px;
+  overflow: auto;
+  border: 1px solid #dbe3e8;
+  border-radius: 8px;
+}
+
+.add-doctor-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.add-doctor-table th,
+.add-doctor-table td {
+  font-size: 12px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}

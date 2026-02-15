@@ -47,9 +47,9 @@ public class AppointmentController {
      */
     @GetMapping("/{date}/{patientName}/{token}")
     public ResponseEntity<Map<String, Object>> getAppointments(
-            @PathVariable String date,
-            @PathVariable String patientName,
-            @PathVariable String token) {
+            @PathVariable("date") String date,
+            @PathVariable("patientName") String patientName,
+            @PathVariable("token") String token) {
         
         Map<String, Object> response = new HashMap<>();
         
@@ -72,6 +72,31 @@ public class AppointmentController {
     }
 
     /**
+     * Retrieves all appointments for the doctor, optionally filtered by patient name.
+     * Only accessible to doctors with a valid token.
+     *
+     * @param patientName The name of the patient for optional filtering
+     * @param token       The authentication token for the doctor
+     * @return ResponseEntity with appointments or error message
+     */
+    @GetMapping("/all/{patientName}/{token}")
+    public ResponseEntity<Map<String, Object>> getAllAppointmentsForDoctor(
+            @PathVariable("patientName") String patientName,
+            @PathVariable("token") String token) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "doctor");
+        if (tokenValidation.getStatusCode() != HttpStatus.OK) {
+            response.put("message", "Invalid or expired token");
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+
+        Map<String, Object> result = appointmentService.getAllAppointmentsForDoctor(patientName, token);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    /**
      * Books a new appointment for a patient.
      * Only accessible to patients with a valid token.
      *
@@ -82,7 +107,7 @@ public class AppointmentController {
     @PostMapping("/{token}")
     public ResponseEntity<Map<String, Object>> bookAppointment(
             @Valid @RequestBody Appointment appointment,
-            @PathVariable String token) {
+            @PathVariable("token") String token) {
         
         Map<String, Object> response = new HashMap<>();
         
@@ -131,7 +156,7 @@ public class AppointmentController {
     @PutMapping("/{token}")
     public ResponseEntity<?> updateAppointment(
             @Valid @RequestBody Appointment appointment,
-            @PathVariable String token) {
+            @PathVariable("token") String token) {
         
         Map<String, Object> response = new HashMap<>();
         
@@ -156,8 +181,8 @@ public class AppointmentController {
      */
     @DeleteMapping("/{id}/{token}")
     public ResponseEntity<?> cancelAppointment(
-            @PathVariable Long id,
-            @PathVariable String token) {
+            @PathVariable("id") Long id,
+            @PathVariable("token") String token) {
         
         Map<String, Object> response = new HashMap<>();
         

@@ -37,10 +37,10 @@ public class DoctorController {
      */
     @GetMapping("/availability/{user}/{doctorId}/{date}/{token}")
     public ResponseEntity<Map<String, Object>> getDoctorAvailability(
-            @PathVariable String user,
-            @PathVariable Long doctorId,
-            @PathVariable String date,
-            @PathVariable String token) {
+            @PathVariable("user") String user,
+            @PathVariable("doctorId") Long doctorId,
+            @PathVariable("date") String date,
+            @PathVariable("token") String token) {
         
         Map<String, Object> response = new HashMap<>();
         
@@ -96,7 +96,7 @@ public class DoctorController {
     @PostMapping("/{token}")
     public ResponseEntity<Map<String, String>> addDoctor(
             @RequestBody Doctor doctor,
-            @PathVariable String token) {
+            @PathVariable("token") String token) {
         
         Map<String, String> response = new HashMap<>();
         
@@ -120,7 +120,7 @@ public class DoctorController {
                 return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } catch (Exception e) {
-            response.put("message", "Some internal error occurred");
+            response.put("message", "Some internal error occurred: " + e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -147,7 +147,7 @@ public class DoctorController {
     @PutMapping("/{token}")
     public ResponseEntity<Map<String, String>> updateDoctor(
             @RequestBody Doctor doctor,
-            @PathVariable String token) {
+            @PathVariable("token") String token) {
         
         Map<String, String> response = new HashMap<>();
         
@@ -186,8 +186,8 @@ public class DoctorController {
      */
     @DeleteMapping("/{id}/{token}")
     public ResponseEntity<Map<String, String>> deleteDoctor(
-            @PathVariable Long id,
-            @PathVariable String token) {
+            @PathVariable("id") Long id,
+            @PathVariable("token") String token) {
         
         Map<String, String> response = new HashMap<>();
         
@@ -226,9 +226,9 @@ public class DoctorController {
      */
     @GetMapping("/filter/{name}/{time}/{speciality}")
     public ResponseEntity<Map<String, Object>> filterDoctors(
-            @PathVariable String name,
-            @PathVariable String time,
-            @PathVariable String speciality) {
+            @PathVariable("name") String name,
+            @PathVariable("time") String time,
+            @PathVariable("speciality") String speciality) {
         
         Map<String, Object> response = service.filterDoctor(name, speciality, time);
         

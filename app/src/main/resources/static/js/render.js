@@ -39,34 +39,34 @@ window.selectRole = function (role) {
     // Step 2: Store role in localStorage
     setRole(role);
 
-    // Step 3: Get token if exists
+    // Step 3: Get token and current role if exists
     const token = localStorage.getItem('token');
+    const currentRole = localStorage.getItem('userRole');
 
     // Step 4: Redirect based on role
     switch (role) {
       case 'admin':
-        if (token) {
-          // Admin has authenticated - go to admin dashboard
-          window.location.href = '/templates/admin/adminDashboard.html';
+        if (token && currentRole === 'admin') {
+          window.location.href = `/adminDashboard/${token}`;
         } else {
-          // Admin not logged in - show login modal on dashboard page
-          window.location.href = '/templates/admin/adminDashboard.html';
+          window.location.href = '/login?role=admin';
         }
         break;
 
       case 'doctor':
-        if (token) {
-          // Doctor has authenticated - go to doctor dashboard
-          window.location.href = '/templates/doctor/doctorDashboard.html';
+        if (token && currentRole === 'doctor') {
+          window.location.href = `/doctorDashboard/${token}`;
         } else {
-          // Doctor not logged in - show login modal on dashboard page
-          window.location.href = '/templates/doctor/doctorDashboard.html';
+          window.location.href = '/login?role=doctor';
         }
         break;
 
       case 'patient':
-        // Patient browsing without login
-        window.location.href = '/pages/patientDashboard.html';
+        if (token && (currentRole === 'loggedPatient' || currentRole === 'patient')) {
+          window.location.href = '/pages/loggedPatientDashboard.html';
+        } else {
+          window.location.href = '/login?role=patient';
+        }
         break;
 
       case 'loggedPatient':

@@ -122,7 +122,7 @@ window.adminLoginHandler = async function () {
         selectRole('admin');
       } else {
         // Fallback: redirect manually
-        window.location.href = '/templates/admin/adminDashboard.html';
+        window.location.href = `/adminDashboard/${token}`;
       }
     } else {
       // Step 5: If login fails or credentials are invalid
@@ -163,7 +163,7 @@ window.doctorLoginHandler = async function () {
 
     // Step 2: Create a doctor object with these credentials
     const doctor = {
-      email: email,
+      identifier: email,
       password: password
     };
 
@@ -206,7 +206,7 @@ window.doctorLoginHandler = async function () {
         selectRole('doctor');
       } else {
         // Fallback: redirect manually
-        window.location.href = '/templates/doctor/doctorDashboard.html';
+        window.location.href = `/doctorDashboard/${token}`;
       }
     } else {
       // If login fails or credentials are invalid

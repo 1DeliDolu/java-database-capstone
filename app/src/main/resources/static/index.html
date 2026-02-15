@@ -1,62 +1,78 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hospital CMS - Select Role</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: #f4f7f9;
-      color: #1f2a37;
-    }
-    .card {
-      width: min(92vw, 420px);
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      padding: 24px;
-      text-align: center;
-    }
-    h1 {
-      margin: 0 0 16px;
-      font-size: 24px;
-    }
-    p {
-      margin: 0 0 20px;
-      color: #4b5563;
-    }
-    .actions {
-      display: grid;
-      gap: 10px;
-    }
-    button {
-      border: 0;
-      border-radius: 8px;
-      padding: 12px;
-      font-size: 15px;
-      cursor: pointer;
-      color: #fff;
-      background: #0d9488;
-    }
-    button:hover {
-      background: #0f766e;
-    }
-  </style>
+  <link rel="icon" type="image/png" href="/assets/images/logo/logo.png">
+  <link rel="stylesheet" href="/assets/css/index.css">
 </head>
 <body>
-  <main class="card">
-    <h1>Select Your Role</h1>
-    <p>Choose how you want to continue.</p>
-    <div class="actions">
-      <button type="button" onclick="window.location.href='/api/admin/login'">Admin</button>
-      <button type="button" onclick="window.location.href='/patient'">Patient</button>
-      <button type="button" onclick="window.location.href='/doctor'">Doctor</button>
+  <header class="topbar">
+    <div class="brand">
+      <img src="/assets/images/logo/logo.png" alt="Hospital CMS logo" class="brand-logo">
+      <span class="brand-title">Hospital CMS</span>
     </div>
+  </header>
+
+  <main class="hero" role="main">
+    <section class="role-panel" aria-labelledby="role-heading">
+      <h1 id="role-heading">Select Your <span>Role</span></h1>
+      <div class="actions">
+        <button type="button" onclick="goRole('admin')">Admin</button>
+        <button type="button" onclick="goRole('doctor')">Doctor</button>
+        <button type="button" onclick="goRole('patient')">Patient</button>
+      </div>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="/assets/images/logo/logo.png" alt="Hospital CMS logo">
+      </div>
+      <div class="footer-column">
+        <h2>Company</h2>
+        <a href="#">About</a>
+      </div>
+      <div class="footer-column">
+        <h2>Support</h2>
+        <a href="#">Account</a>
+      </div>
+      <div class="footer-column">
+        <h2>Legals</h2>
+        <a href="#">Terms &amp; Conditions</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function goRole(role) {
+      const token = localStorage.getItem('token');
+      const currentRole = localStorage.getItem('userRole');
+
+      if (!token) {
+        window.location.href = `/login?role=${role}`;
+        return;
+      }
+
+      if (role === 'admin' && currentRole === 'admin') {
+        window.location.href = `/adminDashboard/${token}`;
+        return;
+      }
+
+      if (role === 'doctor' && currentRole === 'doctor') {
+        window.location.href = `/doctorDashboard/${token}`;
+        return;
+      }
+
+      if (role === 'patient' && (currentRole === 'loggedPatient' || currentRole === 'patient')) {
+        window.location.href = '/pages/loggedPatientDashboard.html';
+        return;
+      }
+
+      window.location.href = `/login?role=${role}`;
+    }
+  </script>
 </body>
 </html>

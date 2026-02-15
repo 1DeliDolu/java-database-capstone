@@ -1,10 +1,8 @@
-// patientRecordServices.js
-import { getPatientAppointments } from "./services/patientServices.js";
-import { createPatientRecordRow } from './components/patientRecordRow.js';
+import { API_BASE_URL } from "./config/config.js";
+import { createPatientRecordRow } from "./components/patientRecordRow.js";
 
 const tableBody = document.getElementById("patientTableBody");
 const token = localStorage.getItem("token");
-
 const urlParams = new URLSearchParams(window.location.search);
 const patientId = urlParams.get("id");
 const doctorId = urlParams.get("doctorId");
@@ -13,35 +11,41 @@ document.addEventListener("DOMContentLoaded", initializePage);
 
 async function initializePage() {
   try {
-    if (!token) throw new Error("No token found");
+    if (!token || !patientId) {
+      throw new Error("Missing token or patient id");
+    }
 
-    const appointmentData = await getPatientAppointments(patientId, token, "doctor") || [];
+    const response = await fetch(
+      `${API_BASE_URL}/patient/${encodeURIComponent(patientId)}/${encodeURIComponent(token)}`,
+      { method: "GET", headers: { "Content-Type": "application/json" } }
+    );
 
-    // Filter by both patientId and doctorId
-    const filteredAppointments = appointmentData.filter(app =>
-      app.doctorId == doctorId);
-    console.log(filteredAppointments)
-    renderAppointments(filteredAppointments);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to load patient appointments");
+    }
+
+    let appointments = data.appointments || [];
+    if (doctorId) {
+      appointments = appointments.filter((app) => String(app.doctorId) === String(doctorId));
+    }
+
+    renderAppointments(appointments);
   } catch (error) {
     console.error("Error loading appointments:", error);
-    alert("❌ Failed to load your appointments.");
+    tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Failed to load patient record.</td></tr>`;
   }
 }
 
 function renderAppointments(appointments) {
   tableBody.innerHTML = "";
 
-  const actionTh = document.querySelector("#patientTable thead tr th:last-child");
-  if (actionTh) {
-    actionTh.style.display = "table-cell"; // Always show "Actions" column
-  }
-
   if (!appointments.length) {
-    tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No Appointments Found</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No Appointments Found</td></tr>`;
     return;
   }
 
-  appointments.forEach(appointment => {
+  appointments.forEach((appointment) => {
     const row = createPatientRecordRow(appointment);
     tableBody.appendChild(row);
   });

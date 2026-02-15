@@ -1,20 +1,19 @@
 package com.project.back_end.controllers;
 
 import java.util.Map;
-import java.util.HashMap;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.project.back_end.models.Admin;
 import com.project.back_end.services.Service;
 
-@RestController
+@Controller
 @RequestMapping("${api.path}" + "admin")
 public class AdminController {
 
@@ -25,10 +24,8 @@ public class AdminController {
     }
 
     @GetMapping("/login")
-    public ResponseEntity<Map<String, String>> adminLoginInfo() {
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Use POST /api/admin/login with JSON body: {\"username\":\"...\",\"password\":\"...\"}");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public String adminLoginPage() {
+        return "redirect:/login?role=admin";
     }
 
     /**
@@ -38,6 +35,7 @@ public class AdminController {
      * @return ResponseEntity with token if login is successful, error message otherwise
      */
     @PostMapping("/login")
+    @ResponseBody
     public ResponseEntity<Map<String, String>> adminLogin(@RequestBody Admin admin) {
         return service.validateAdmin(admin);
     }

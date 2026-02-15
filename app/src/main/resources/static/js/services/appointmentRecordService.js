@@ -13,7 +13,7 @@
 
 import { API_BASE_URL } from "../config/config.js";
 
-const APPOINTMENT_API = `${API_BASE_URL}/api/appointments`;
+const APPOINTMENT_API = `${API_BASE_URL}/appointments`;
 
 /**
  * Get all appointments for a doctor
@@ -29,40 +29,25 @@ const APPOINTMENT_API = `${API_BASE_URL}/api/appointments`;
  */
 export async function getAllAppointments(date, patientName, token) {
   try {
-    // Step 1: Validate inputs
     if (!token) {
       throw new Error('Authentication token is required');
     }
 
-    // Step 2: Build query string
-    const queryParams = new URLSearchParams();
-    if (date && date.trim()) {
-      queryParams.append('date', date.trim());
-    }
-    if (patientName && patientName.trim()) {
-      queryParams.append('patientName', patientName.trim());
-    }
+    const safePatientName = (patientName && patientName.trim()) ? patientName.trim() : 'null';
+    const hasDate = Boolean(date && String(date).trim());
+    const url = hasDate
+      ? `${APPOINTMENT_API}/${encodeURIComponent(String(date).trim())}/${encodeURIComponent(safePatientName)}/${encodeURIComponent(token)}`
+      : `${APPOINTMENT_API}/all/${encodeURIComponent(safePatientName)}/${encodeURIComponent(token)}`;
 
-    // Step 3: Construct URL with parameters
-    const url = queryParams.toString()
-      ? `${APPOINTMENT_API}?${queryParams.toString()}`
-      : APPOINTMENT_API;
-
-    // Step 4: Send GET request
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
 
-    // Step 5: Check response
     if (!response.ok) {
       throw new Error(`Failed to fetch appointments: ${response.statusText}`);
     }
 
-    // Step 6: Parse and return appointments
     const data = await response.json();
     return data.appointments || data || [];
   } catch (error) {
@@ -93,12 +78,10 @@ export async function bookAppointment(appointment, token) {
       throw new Error('Appointment data and token are required');
     }
 
-    // Step 2: Send POST request to book appointment
-    const response = await fetch(APPOINTMENT_API, {
+    const response = await fetch(`${APPOINTMENT_API}/${encodeURIComponent(token)}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(appointment)
     });
@@ -142,12 +125,10 @@ export async function updateAppointment(appointment, token) {
       throw new Error('Appointment ID and token are required');
     }
 
-    // Step 2: Send PUT request to update appointment
-    const response = await fetch(`${APPOINTMENT_API}/${appointment.id}`, {
+    const response = await fetch(`${APPOINTMENT_API}/${encodeURIComponent(token)}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(appointment)
     });
@@ -186,13 +167,9 @@ export async function cancelAppointment(appointmentId, token) {
       throw new Error('Appointment ID and token are required');
     }
 
-    // Step 2: Send DELETE request
-    const response = await fetch(`${APPOINTMENT_API}/${appointmentId}`, {
+    const response = await fetch(`${APPOINTMENT_API}/${encodeURIComponent(appointmentId)}/${encodeURIComponent(token)}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
 
     // Step 3: Parse response

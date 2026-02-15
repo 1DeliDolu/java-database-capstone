@@ -1,4 +1,3 @@
-<!-- patientAppointment.html -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,13 +6,123 @@
   <link rel="icon" type="image/svg+xml" href="../assets/images/logo/logo.png" />
   <title>Patient Appointments</title>
   <link rel="stylesheet" href="../assets/css/adminDashboard.css">
-  <link rel="stylesheet" href="../assets/css/doctorDashboard.css">
   <link rel="stylesheet" href="../assets/css/style.css">
   <script src="../js/render.js" defer></script>
   <script src="../js/util.js" defer></script>
   <script src="../js/components/header.js" defer></script>
   <script src="../js/components/footer.js" defer></script>
   <script type="module" src="../js/patientAppointment.js" defer></script>
+  <style>
+    .actions-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .add-btn {
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      background: #0f766e;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .add-card {
+      display: none;
+      background: #fff;
+      border: 1px solid #dbe3e8;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .add-card.show {
+      display: block;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(170px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .form-grid label {
+      display: block;
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .form-grid input,
+    .form-grid select {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .form-actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .save-btn,
+    .cancel-btn {
+      border: 0;
+      border-radius: 8px;
+      padding: 9px 12px;
+      cursor: pointer;
+    }
+
+    .save-btn {
+      background: #0f766e;
+      color: #fff;
+    }
+
+    .cancel-btn {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .table-avatar {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+
+    #patientTable tbody tr {
+      height: 52px;
+    }
+
+    #patientTable td.actions-cell {
+      padding: 0;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .action-icon {
+      height: 52px;
+      width: auto;
+      max-width: 52px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+      cursor: pointer;
+    }
+
+    @media (max-width: 860px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 
 <body onload="renderContent()">
@@ -21,18 +130,50 @@
     <div class="wrapper">
       <div id="header"></div>
       <div class="main-content">
-        <h2>Patient <span>Appointment</span></h2>
-        <input type="text" id="searchBar" class="searchBar" placeholder="Search Bar for custom output" />
-                <div class="filter-wrapper">
-                    <select class="filter-select" id="appointmentFilter">
-                        <option value="allAppointments">All Appointments</option>
-                        <option value="future">Upcoming Appointments</option>
-                        <option value="past">Past Appointments</option>
-                    </select>
-                </div>
+        <h2>Patient <span>Appointments</span></h2>
+
+        <div class="actions-bar">
+          <input type="text" id="searchBar" class="searchBar" placeholder="Search doctor name" />
+          <select class="filter-select" id="appointmentFilter">
+            <option value="allAppointments">All Appointments</option>
+            <option value="future">Upcoming Appointments</option>
+            <option value="past">Past Appointments</option>
+          </select>
+          <button id="addAppointmentBtn" class="add-btn" type="button">Add Appointment</button>
+        </div>
+
+        <div id="addAppointmentCard" class="add-card">
+          <h3>Add Appointment</h3>
+          <div class="form-grid">
+            <div>
+              <label for="doctorSelect">Doctor</label>
+              <select id="doctorSelect">
+                <option value="">Select doctor</option>
+              </select>
+            </div>
+            <div>
+              <label for="appointmentDate">Date</label>
+              <select id="appointmentDate">
+                <option value="">Select date</option>
+              </select>
+            </div>
+            <div>
+              <label for="appointmentTime">Time</label>
+              <select id="appointmentTime">
+                <option value="">Select time</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button id="saveAppointmentBtn" class="save-btn" type="button">Save Appointment</button>
+            <button id="cancelAppointmentBtn" class="cancel-btn" type="button">Cancel</button>
+          </div>
+        </div>
+
         <table id="patientTable">
           <thead class="table-header">
             <tr>
+              <th>Image</th>
               <th>Patient Name</th>
               <th>Doctor Name</th>
               <th>Date</th>
@@ -40,9 +181,7 @@
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody id="patientTableBody">
-            <!-- rows will be inserted here dynamically -->
-          </tbody>
+          <tbody id="patientTableBody"></tbody>
         </table>
       </div>
       <div id="footer"></div>

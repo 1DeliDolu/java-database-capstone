@@ -19,7 +19,7 @@
 import { API_BASE_URL } from "../config/config.js";
 
 // Define the doctor API endpoint
-const DOCTOR_API = API_BASE_URL + "/api/doctors";
+const DOCTOR_API = API_BASE_URL + "/doctor";
 
 /**
  * Fetch all doctors from the API
@@ -61,12 +61,9 @@ export async function getDoctors() {
 export async function deleteDoctor(id, token) {
   try {
     // Step 1: Construct delete request
-    const response = await fetch(`${DOCTOR_API}/${id}`, {
+    const response = await fetch(`${DOCTOR_API}/${encodeURIComponent(id)}/${encodeURIComponent(token)}`, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { "Content-Type": "application/json" },
     });
 
     // Step 2: Parse response
@@ -102,12 +99,9 @@ export async function saveDoctor(doctor, token) {
     }
 
     // Step 2: Send POST request with doctor data
-    const response = await fetch(DOCTOR_API, {
+    const response = await fetch(`${DOCTOR_API}/${encodeURIComponent(token)}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(doctor),
     });
 
@@ -147,23 +141,10 @@ export async function saveDoctor(doctor, token) {
  */
 export async function filterDoctors(name = "", time = "", specialty = "") {
   try {
-    // Step 1: Build query string with provided filters
-    const queryParams = new URLSearchParams();
-
-    if (name && name.trim()) {
-      queryParams.append("name", name.trim());
-    }
-    if (time && time.trim()) {
-      queryParams.append("time", time.trim());
-    }
-    if (specialty && specialty.trim()) {
-      queryParams.append("specialty", specialty.trim());
-    }
-
-    // Step 2: Construct URL with query parameters
-    const url = queryParams.toString()
-      ? `${DOCTOR_API}/filter?${queryParams.toString()}`
-      : `${DOCTOR_API}`;
+    const safeName = name && name.trim() ? name.trim() : "null";
+    const safeTime = time && time.trim() ? time.trim() : "null";
+    const safeSpecialty = specialty && specialty.trim() ? specialty.trim() : "null";
+    const url = `${DOCTOR_API}/filter/${encodeURIComponent(safeName)}/${encodeURIComponent(safeTime)}/${encodeURIComponent(safeSpecialty)}`;
 
     // Step 3: Send GET request with filters
     const response = await fetch(url, {

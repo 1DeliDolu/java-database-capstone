@@ -4,10 +4,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +48,13 @@ public class DoctorService {
         List<String> availableSlots = new ArrayList<>();
         
         try {
+            Optional<Doctor> doctorOpt = doctorRepository.findById(doctorId);
+            if (doctorOpt.isEmpty()) {
+                return availableSlots;
+            }
+
+            Doctor doctor = doctorOpt.get();
+
             // Fetch all appointments for the doctor on the specified date
             LocalDateTime startOfDay = LocalDateTime.of(date, LocalTime.MIN);
             LocalDateTime endOfDay = LocalDateTime.of(date, LocalTime.MAX);
@@ -53,25 +62,45 @@ public class DoctorService {
             var appointments = appointmentRepository.findByDoctorIdAndAppointmentTimeBetween(
                 doctorId, startOfDay, endOfDay);
             
-            // Generate available time slots (assuming 1-hour slots from 8 AM to 5 PM)
-            List<String> allSlots = new ArrayList<>();
-            for (int hour = 8; hour < 17; hour++) {
-                allSlots.add(String.format("%02d:00", hour));
+            // Base slots should come from doctor's configured availability
+            List<String> baseSlots = doctor.getAvailableTimes();
+            if (baseSlots == null || baseSlots.isEmpty()) {
+                for (int hour = 8; hour < 17; hour++) {
+                    availableSlots.add(String.format("%02d:00", hour));
+                }
+                return availableSlots;
             }
-            
-            // Remove booked slots
+
+            Set<String> bookedStartTimes = new HashSet<>();
             for (var appointment : appointments) {
                 int hour = appointment.getAppointmentTime().getHour();
-                String bookedSlot = String.format("%02d:00", hour);
-                allSlots.remove(bookedSlot);
+                int minute = appointment.getAppointmentTime().getMinute();
+                bookedStartTimes.add(String.format("%02d:%02d", hour, minute));
             }
-            
-            availableSlots = allSlots;
+
+            for (String slot : baseSlots) {
+                String slotStart = extractStartTime(slot);
+                if (!bookedStartTimes.contains(slotStart)) {
+                    availableSlots.add(slot);
+                }
+            }
         } catch (Exception e) {
             // Return empty list on error
         }
         
         return availableSlots;
+    }
+
+    private String extractStartTime(String slot) {
+        if (slot == null || slot.isBlank()) {
+            return "";
+        }
+
+        String normalized = slot.trim();
+        if (normalized.contains("-")) {
+            return normalized.split("-")[0].trim();
+        }
+        return normalized;
     }
 
     /**
@@ -92,7 +121,7 @@ public class DoctorService {
             doctorRepository.save(doctor);
             return 1; // Success
         } catch (Exception e) {
-            return 0; // Internal error
+            throw new RuntimeException("Doctor save failed: " + e.getMessage(), e);
         }
     }
 

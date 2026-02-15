@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" th:href="@{/assets/images/logo/logo.png}">
+    <title>Central Login</title>
+    <style>
+        :root { --bg:#f3f7f8; --card:#ffffff; --text:#1f2937; --muted:#6b7280; --primary:#0f766e; --primary-hover:#115e59; --border:#d1d5db; --danger:#b91c1c; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Arial, sans-serif; min-height: 100vh; display: grid; place-items: center; background: linear-gradient(135deg,#eaf4f6 0%,var(--bg) 100%); color: var(--text); }
+        .card { width: min(92vw,440px); background: var(--card); border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; box-shadow: 0 12px 30px rgba(0,0,0,.08); }
+        h1 { margin: 0 0 8px; font-size: 24px; }
+        p { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+        label { display: block; margin: 12px 0 6px; font-size: 14px; font-weight: 600; }
+        input, select { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 15px; }
+        input:focus, select:focus { outline: 2px solid #99f6e4; border-color: var(--primary); }
+        .actions { margin-top: 16px; display: grid; gap: 8px; }
+        button { border: 0; border-radius: 8px; padding: 11px 12px; font-size: 15px; cursor: pointer; }
+        .primary { background: var(--primary); color:#fff; }
+        .primary:hover { background: var(--primary-hover); }
+        .secondary { background: #e5e7eb; color:#111827; }
+        .secondary:hover { background: #d1d5db; }
+        #error { min-height: 18px; margin-top: 10px; color: var(--danger); font-size: 13px; }
+        .switch-link { margin-top: 10px; font-size: 14px; color: var(--muted); }
+        .switch-link a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .switch-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <h1>Central Login</h1>
+        <p>Select role and sign in.</p>
+
+        <form id="centralLoginForm">
+            <label for="role">Role</label>
+            <select id="role" required>
+                <option value="">Select role</option>
+                <option value="admin">Admin</option>
+                <option value="doctor">Doctor</option>
+                <option value="patient">Patient</option>
+            </select>
+
+            <label for="identifier">Username / Email</label>
+            <input id="identifier" type="text" required autocomplete="username">
+
+            <label for="password">Password</label>
+            <input id="password" type="password" required autocomplete="current-password">
+
+            <div class="actions">
+                <button class="primary" type="submit">Login</button>
+                <button class="secondary" type="button" id="registerBtn">Go to Register</button>
+                <button class="secondary" type="button" id="backBtn">Back</button>
+            </div>
+            <div id="error"></div>
+            <div class="switch-link">No account? <a href="/register">Register here</a></div>
+        </form>
+    </main>
+
+    <script>
+        const form = document.getElementById('centralLoginForm');
+        const errorBox = document.getElementById('error');
+        const roleSelect = document.getElementById('role');
+
+        const roleFromQuery = new URLSearchParams(window.location.search).get('role');
+        if (roleFromQuery && ['admin', 'doctor', 'patient'].includes(roleFromQuery)) {
+            roleSelect.value = roleFromQuery;
+        }
+
+        document.getElementById('backBtn').addEventListener('click', () => {
+            window.location.href = '/';
+        });
+
+        document.getElementById('registerBtn').addEventListener('click', () => {
+            window.location.href = '/register';
+        });
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            errorBox.textContent = '';
+
+            const role = roleSelect.value;
+            const identifier = document.getElementById('identifier').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!role) {
+                errorBox.textContent = 'Please select a role.';
+                return;
+            }
+
+            let url = '';
+            let payload = {};
+
+            if (role === 'admin') {
+                url = '/api/admin/login';
+                payload = { username: identifier, password };
+            } else if (role === 'doctor') {
+                url = '/doctor/login';
+                payload = { identifier, password };
+            } else {
+                url = '/patient/login';
+                payload = { identifier, password };
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.token) {
+                    errorBox.textContent = data.message || 'Login failed.';
+                    return;
+                }
+
+                localStorage.setItem('token', data.token);
+
+                if (role === 'admin') {
+                    localStorage.setItem('userRole', 'admin');
+                    window.location.href = `/adminDashboard/${data.token}`;
+                } else if (role === 'doctor') {
+                    localStorage.setItem('userRole', 'doctor');
+                    window.location.href = `/doctorDashboard/${data.token}`;
+                } else {
+                    localStorage.setItem('userRole', 'loggedPatient');
+                    window.location.href = '/pages/loggedPatientDashboard.html';
+                }
+            } catch (error) {
+                errorBox.textContent = 'Network error. Please try again.';
+            }
+        });
+    </script>
+</body>
+</html>
