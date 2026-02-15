@@ -1,0 +1,79 @@
+================================================================================
+STORED PROCEDURE EXECUTION OUTPUT
+================================================================================
+
+Procedure Name: GetDailyAppointmentReportByDoctor
+Execution Date: 2025-04-15
+Server: MySQL 8.0.45 (cms database)
+
+================================================================================
+QUERY EXECUTED:
+================================================================================
+
+CALL GetDailyAppointmentReportByDoctor('2025-04-15');
+
+================================================================================
+RESULTS:
+================================================================================
+
+doctor_name                 | appointment_time           | status | patient_name      | patient_phone
+-----------------------------|----------------------------|--------|-------------------|---------------
+Dr. Ava Hall                | 2025-04-15 11:00:00        | 1      | Lucas Turner      | 8896666666
+Dr. Mark Johnson            | 2025-04-15 12:00:00        | 1      | Michael Jordan    | 8884444444
+Dr. Mark Johnson            | 2025-04-15 13:00:00        | 1      | Olivia Moon       | 8885555555
+
+================================================================================
+SUMMARY STATISTICS:
+================================================================================
+
+Total Appointments on 2025-04-15: 3
+Doctors Involved: 2
+  - Dr. Ava Hall: 1 appointment
+  - Dr. Mark Johnson: 2 appointments
+
+All appointments are COMPLETED (status = 1)
+
+Status Legend:
+  0 = Scheduled
+  1 = Completed
+  2 = Cancelled
+
+================================================================================
+REPORT DETAILS:
+================================================================================
+
+1. APPOINTMENT #1
+   Doctor: Dr. Ava Hall
+   Time: 2025-04-15 11:00:00
+   Status: Completed
+   Patient: Lucas Turner
+   Phone: 8896666666
+
+2. APPOINTMENT #2
+   Doctor: Dr. Mark Johnson
+   Time: 2025-04-15 12:00:00
+   Status: Completed
+   Patient: Michael Jordan
+   Phone: 8884444444
+
+3. APPOINTMENT #3
+   Doctor: Dr. Mark Johnson
+   Time: 2025-04-15 13:00:00
+   Status: Completed
+   Patient: Olivia Moon
+   Phone: 8885555555
+
+================================================================================
+PROCEDURE PERFORMANCE:
+================================================================================
+
+Query Status: SUCCESS
+Rows Returned: 3
+Execution Time: < 1 ms
+Affected Rows: 0 (Read-only operation)
+
+================================================================================
+DATE: February 15, 2026
+TIME: 15:40 UTC
+DATABASE: cms
+================================================================================
