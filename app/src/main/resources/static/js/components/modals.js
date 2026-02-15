@@ -1,12 +1,12 @@
 /**
  * Modals Component
- * 
+ *
  * Handles modal dialog display and form submission:
  * - Dynamic modal content generation based on modal type
  * - Admin login, Doctor login, Patient login/signup forms
  * - Add doctor form with availability checkboxes
  * - Modal event handling (open, close, submit)
- * 
+ *
  * Modal Types:
  * - 'addDoctor': Form for adding new doctor (admin only)
  * - 'patientLogin': Login form for patient users
@@ -14,7 +14,7 @@
  * - 'adminLogin': Login form for admin users
  * - 'doctorLogin': Login form for doctor users
  * - 'bookAppointment': Form for booking appointment (patient)
- * 
+ *
  * Dependencies:
  * - HTML modal structure with id "modal" and "modal-body"
  * - Global functions: adminAddDoctor, signupPatient, loginPatient, etc.
@@ -24,50 +24,50 @@
 /**
  * Open modal dialog with specified form type
  * Dynamically generates modal content based on type
- * 
+ *
  * @param {string} type - Modal type (addDoctor, patientLogin, patientSignup, adminLogin, doctorLogin, bookAppointment)
  */
 export function openModal(type) {
   try {
-    let modalContent = '';
+    let modalContent = "";
 
     // Step 1: Generate modal content based on type
     switch (type) {
-      case 'addDoctor':
+      case "addDoctor":
         modalContent = generateAddDoctorForm();
         break;
-      case 'patientLogin':
+      case "patientLogin":
         modalContent = generatePatientLoginForm();
         break;
-      case 'patientSignup':
+      case "patientSignup":
         modalContent = generatePatientSignupForm();
         break;
-      case 'adminLogin':
+      case "adminLogin":
         modalContent = generateAdminLoginForm();
         break;
-      case 'doctorLogin':
+      case "doctorLogin":
         modalContent = generateDoctorLoginForm();
         break;
-      case 'bookAppointment':
+      case "bookAppointment":
         modalContent = generateBookAppointmentForm();
         break;
       default:
-        console.error('Unknown modal type:', type);
+        console.error("Unknown modal type:", type);
         return;
     }
 
     // Step 2: Insert content into modal
-    const modalBody = document.getElementById('modal-body');
+    const modalBody = document.getElementById("modal-body");
     if (!modalBody) {
-      console.error('Modal body element not found');
+      console.error("Modal body element not found");
       return;
     }
     modalBody.innerHTML = modalContent;
 
     // Step 3: Display modal
-    const modal = document.getElementById('modal');
+    const modal = document.getElementById("modal");
     if (modal) {
-      modal.style.display = 'block';
+      modal.style.display = "block";
     }
 
     // Step 4: Attach close button listener
@@ -75,17 +75,16 @@ export function openModal(type) {
 
     // Step 5: Attach form submission listeners based on type
     attachFormListeners(type);
-
   } catch (error) {
-    console.error('Error opening modal:', error);
-    alert('✗ An error occurred. Please try again.');
+    console.error("Error opening modal:", error);
+    alert("✗ An error occurred. Please try again.");
   }
 }
 
 /**
  * Generate HTML for "Add Doctor" form
  * Used by admin to add new doctors to the system
- * 
+ *
  * @returns {string} HTML form content
  */
 function generateAddDoctorForm() {
@@ -130,7 +129,7 @@ function generateAddDoctorForm() {
 
 /**
  * Generate HTML for "Patient Login" form
- * 
+ *
  * @returns {string} HTML form content
  */
 function generatePatientLoginForm() {
@@ -144,7 +143,7 @@ function generatePatientLoginForm() {
 
 /**
  * Generate HTML for "Patient Signup" form
- * 
+ *
  * @returns {string} HTML form content
  */
 function generatePatientSignupForm() {
@@ -161,7 +160,7 @@ function generatePatientSignupForm() {
 
 /**
  * Generate HTML for "Admin Login" form
- * 
+ *
  * @returns {string} HTML form content
  */
 function generateAdminLoginForm() {
@@ -175,7 +174,7 @@ function generateAdminLoginForm() {
 
 /**
  * Generate HTML for "Doctor Login" form
- * 
+ *
  * @returns {string} HTML form content
  */
 function generateDoctorLoginForm() {
@@ -189,7 +188,7 @@ function generateDoctorLoginForm() {
 
 /**
  * Generate HTML for "Book Appointment" form
- * 
+ *
  * @returns {string} HTML form content
  */
 function generateBookAppointmentForm() {
@@ -217,22 +216,22 @@ function generateBookAppointmentForm() {
  * Allows user to close modal by clicking close button
  */
 function attachCloseModal() {
-  const closeBtn = document.getElementById('closeModal');
+  const closeBtn = document.getElementById("closeModal");
   if (closeBtn) {
     closeBtn.onclick = () => {
-      const modal = document.getElementById('modal');
+      const modal = document.getElementById("modal");
       if (modal) {
-        modal.style.display = 'none';
+        modal.style.display = "none";
       }
     };
   }
 
   // Also close when clicking outside the modal box
   window.onclick = (event) => {
-    const modal = document.getElementById('modal');
-    const modalContent = document.querySelector('.modal-content');
+    const modal = document.getElementById("modal");
+    const modalContent = document.querySelector(".modal-content");
     if (modal && event.target === modal) {
-      modal.style.display = 'none';
+      modal.style.display = "none";
     }
   };
 }
@@ -240,59 +239,59 @@ function attachCloseModal() {
 /**
  * Attach form submission listeners based on modal type
  * Routes form submission to appropriate handler function
- * 
+ *
  * @param {string} type - Modal type
  */
 function attachFormListeners(type) {
   try {
     switch (type) {
-      case 'addDoctor':
-        const saveDoctorBtn = document.getElementById('saveDoctorBtn');
-        if (saveDoctorBtn && typeof window.adminAddDoctor === 'function') {
-          saveDoctorBtn.addEventListener('click', window.adminAddDoctor);
+      case "addDoctor":
+        const saveDoctorBtn = document.getElementById("saveDoctorBtn");
+        if (saveDoctorBtn && typeof window.adminAddDoctor === "function") {
+          saveDoctorBtn.addEventListener("click", window.adminAddDoctor);
         }
         break;
 
-      case 'patientSignup':
-        const signupBtn = document.getElementById('signupBtn');
-        if (signupBtn && typeof window.signupPatient === 'function') {
-          signupBtn.addEventListener('click', window.signupPatient);
+      case "patientSignup":
+        const signupBtn = document.getElementById("signupBtn");
+        if (signupBtn && typeof window.signupPatient === "function") {
+          signupBtn.addEventListener("click", window.signupPatient);
         }
         break;
 
-      case 'patientLogin':
-        const loginBtn = document.getElementById('loginBtn');
-        if (loginBtn && typeof window.loginPatient === 'function') {
-          loginBtn.addEventListener('click', window.loginPatient);
+      case "patientLogin":
+        const loginBtn = document.getElementById("loginBtn");
+        if (loginBtn && typeof window.loginPatient === "function") {
+          loginBtn.addEventListener("click", window.loginPatient);
         }
         break;
 
-      case 'adminLogin':
-        const adminLoginBtn = document.getElementById('adminLoginBtn');
-        if (adminLoginBtn && typeof window.adminLoginHandler === 'function') {
-          adminLoginBtn.addEventListener('click', window.adminLoginHandler);
+      case "adminLogin":
+        const adminLoginBtn = document.getElementById("adminLoginBtn");
+        if (adminLoginBtn && typeof window.adminLoginHandler === "function") {
+          adminLoginBtn.addEventListener("click", window.adminLoginHandler);
         }
         break;
 
-      case 'doctorLogin':
-        const doctorLoginBtn = document.getElementById('doctorLoginBtn');
-        if (doctorLoginBtn && typeof window.doctorLoginHandler === 'function') {
-          doctorLoginBtn.addEventListener('click', window.doctorLoginHandler);
+      case "doctorLogin":
+        const doctorLoginBtn = document.getElementById("doctorLoginBtn");
+        if (doctorLoginBtn && typeof window.doctorLoginHandler === "function") {
+          doctorLoginBtn.addEventListener("click", window.doctorLoginHandler);
         }
         break;
 
-      case 'bookAppointment':
-        const bookBtn = document.getElementById('bookAppointmentBtn');
-        if (bookBtn && typeof window.bookAppointmentHandler === 'function') {
-          bookBtn.addEventListener('click', window.bookAppointmentHandler);
+      case "bookAppointment":
+        const bookBtn = document.getElementById("bookAppointmentBtn");
+        if (bookBtn && typeof window.bookAppointmentHandler === "function") {
+          bookBtn.addEventListener("click", window.bookAppointmentHandler);
         }
         break;
 
       default:
-        console.warn('No form listeners attached for type:', type);
+        console.warn("No form listeners attached for type:", type);
     }
   } catch (error) {
-    console.error('Error attaching form listeners:', error);
+    console.error("Error attaching form listeners:", error);
   }
 }
 
@@ -301,9 +300,9 @@ function attachFormListeners(type) {
  * Useful when form submission is successful
  */
 export function closeModal() {
-  const modal = document.getElementById('modal');
+  const modal = document.getElementById("modal");
   if (modal) {
-    modal.style.display = 'none';
+    modal.style.display = "none";
   }
 }
 
@@ -312,14 +311,14 @@ export function closeModal() {
  * Useful after successful form submission
  */
 export function clearModalForm() {
-  const modalBody = document.getElementById('modal-body');
+  const modalBody = document.getElementById("modal-body");
   if (modalBody) {
-    const inputs = modalBody.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-      if (input.type === 'checkbox' || input.type === 'radio') {
+    const inputs = modalBody.querySelectorAll("input, select, textarea");
+    inputs.forEach((input) => {
+      if (input.type === "checkbox" || input.type === "radio") {
         input.checked = false;
       } else {
-        input.value = '';
+        input.value = "";
       }
     });
   }
@@ -328,5 +327,5 @@ export function clearModalForm() {
 export default {
   openModal,
   closeModal,
-  clearModalForm
+  clearModalForm,
 };
