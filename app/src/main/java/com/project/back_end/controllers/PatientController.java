@@ -43,7 +43,7 @@ public class PatientController {
      * @return ResponseEntity with patient details or error message
      */
     @GetMapping("/{token}")
-    public ResponseEntity<Map<String, Object>> getPatient(@PathVariable String token) {
+    public ResponseEntity<Map<String, Object>> getPatient(@PathVariable("token") String token) {
         Map<String, Object> response = new HashMap<>();
         
         // Validate token for patient role
@@ -112,8 +112,8 @@ public class PatientController {
      */
     @GetMapping("/{id}/{token}")
     public ResponseEntity<Map<String, Object>> getPatientAppointment(
-            @PathVariable Long id,
-            @PathVariable String token) {
+            @PathVariable("id") Long id,
+            @PathVariable("token") String token) {
         
         Map<String, Object> response = new HashMap<>();
         
@@ -138,9 +138,9 @@ public class PatientController {
      */
     @GetMapping("/filter/{condition}/{name}/{token}")
     public ResponseEntity<Map<String, Object>> filterPatientAppointment(
-            @PathVariable String condition,
-            @PathVariable String name,
-            @PathVariable String token) {
+            @PathVariable("condition") String condition,
+            @PathVariable("name") String name,
+            @PathVariable("token") String token) {
         
         Map<String, Object> response = new HashMap<>();
         
