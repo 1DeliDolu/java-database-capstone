@@ -1,5 +1,7 @@
 package com.project.back_end.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -8,7 +10,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Patient Model Class
@@ -277,13 +278,4 @@ public class Patient {
                 ", address='" + address + '\'' +
                 '}';
     }
-}
-
-
-// 7. Getters and Setters:
-//    - Standard getter and setter methods are provided for all fields: id, name, email, password, phone, and address.
-//    - These methods allow access and modification of the fields of the Patient class.
-
-  
-
 }
