@@ -64,6 +64,3 @@ function renderFooter() {
 
 // Call renderFooter when DOM is loaded
 document.addEventListener("DOMContentLoaded", renderFooter);
-  Call the renderFooter function to populate the footer in the page
-
-*/

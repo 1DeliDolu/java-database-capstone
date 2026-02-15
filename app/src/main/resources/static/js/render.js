@@ -186,11 +186,3 @@ window.hasUserRole = function (role) {
     return false;
   }
 };
-
-export {
-  selectRole: window.selectRole,
-  renderContent: window.renderContent,
-  protectPage: window.protectPage,
-  handleLogout: window.handleLogout,
-  hasUserRole: window.hasUserRole
-};

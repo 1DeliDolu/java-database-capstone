@@ -1,25 +1,27 @@
 # Smart Clinic Management System
 
-Spring Boot-based clinic management application.
+Smart Clinic Management System is a Spring Boot application for managing doctors, patients, appointments, and prescriptions with role-based access.
 
-## Technology
+## Tech Stack
 
 - Java 17+
 - Spring Boot 3.4.4
 - Spring MVC + Thymeleaf
 - Spring Data JPA (MySQL)
-- Spring Data MongoDB (Prescription)
-- JWT-based authentication
-- Vanilla JS + HTML/CSS
+- Spring Data MongoDB (Prescriptions)
+- JWT authentication
+- Vanilla JavaScript, HTML, CSS
 
-## Architecture
+## Repository Structure
 
-- Backend: `app/src/main/java/com/project/back_end`
+- Backend Java source: `app/src/main/java/com/project/back_end`
+- Backend resources: `app/src/main/resources`
 - Thymeleaf templates: `app/src/main/resources/templates`
-- Static pages/assets: `app/src/main/resources/static`
-- Configuration: `app/src/main/resources/application.properties`
+- Static frontend files: `app/src/main/resources/static`
+- Main config file: `app/src/main/resources/application.properties`
+- Docker compose: `docker-compose.yml`
 
-## Running the Application
+## Running the Project
 
 ### Option 1: Docker Compose
 
@@ -27,44 +29,42 @@ Spring Boot-based clinic management application.
 docker compose up --build
 ```
 
-- Application: `http://localhost:8081`
+Services:
+- App: `http://localhost:8081`
 - MySQL: `localhost:3306`
 - MongoDB: `localhost:27017`
 
-### Option 2: Local
+### Option 2: Local Run
 
-Prerequisite: MySQL and MongoDB must be running.
+Prerequisites:
+- Java 17+
+- Maven
+- Running MySQL and MongoDB instances
 
 ```bash
 cd app
 mvn spring-boot:run
 ```
 
-## Main Flow
+## Main User Flow
 
-- Home page: `http://localhost:8081/`
+- Home: `http://localhost:8081/`
 - Central login: `http://localhost:8081/login`
 - Central register: `http://localhost:8081/register`
-- Role-based login preselection:
-  - `http://localhost:8081/login?role=admin`
-  - `http://localhost:8081/login?role=doctor`
-  - `http://localhost:8081/login?role=patient`
 
-Post-login redirection:
+Role-specific login shortcuts:
+- Admin: `http://localhost:8081/login?role=admin`
+- Doctor: `http://localhost:8081/login?role=doctor`
+- Patient: `http://localhost:8081/login?role=patient`
 
+Post-login destinations:
 - Admin: `/adminDashboard/{token}`
 - Doctor: `/doctorDashboard/{token}`
 - Patient: `/pages/loggedPatientDashboard.html`
 
-## Key Pages
+## Core API Endpoints
 
-- Admin dashboard: `templates/admin/adminDashboard.html`
-- Doctor dashboard: `templates/doctor/doctorDashboard.html`
-- Central login/register: `templates/auth/centralLogin.html`, `templates/auth/centralRegister.html`
-
-## API Overview
-
-### Admin Auth
+### Admin
 
 - `POST /api/admin/login`
 
@@ -80,7 +80,7 @@ Post-login redirection:
 
 ### Patient
 
-- `POST /patient` (signup)
+- `POST /patient`
 - `POST /patient/login`
 - `GET /patient/{token}`
 - `GET /patient/{id}/{token}`
@@ -98,7 +98,7 @@ Post-login redirection:
 - `POST /api/prescription/{token}`
 - `GET /api/prescription/{appointmentId}/{token}`
 
-### Admin Management (Dashboard tables)
+### Admin Management
 
 - `GET /api/admin/manage/overview/{token}`
 - `PUT /api/admin/manage/doctor/{token}`
@@ -108,17 +108,16 @@ Post-login redirection:
 - `PUT /api/admin/manage/appointment/{token}`
 - `DELETE /api/admin/manage/appointment/{id}/{token}`
 
-## Configuration Notes
+## Important Configuration
 
-In `application.properties`:
+Key values in `app/src/main/resources/application.properties`:
 
 - `server.port=8081`
 - `api.path=/api/`
-- Thymeleaf path/caching settings enabled
 - `spring.web.resources.static-locations=classpath:/static/`
 
 ## Development Notes
 
-- If port conflict occurs (`8081 already in use`), free the port and restart.
-- Some endpoints pass token as a path parameter.
-- Dashboard access is protected with token validation.
+- If port `8081` is busy, stop the process using it and restart the app.
+- Many endpoints include JWT tokens in path parameters.
+- UI dashboards rely on valid token + role checks in frontend scripts.

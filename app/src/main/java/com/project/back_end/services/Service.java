@@ -1,10 +1,14 @@
 package com.project.back_end.services;
 
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,25 +20,30 @@ import com.project.back_end.models.Appointment;
 import com.project.back_end.models.Doctor;
 import com.project.back_end.models.Patient;
 import com.project.back_end.repo.AdminRepository;
+import com.project.back_end.repo.AppointmentRepository;
 import com.project.back_end.repo.DoctorRepository;
 import com.project.back_end.repo.PatientRepository;
 
 @org.springframework.stereotype.Service
 public class Service {
+    private static final Pattern TIME_TOKEN_PATTERN =
+            Pattern.compile("(\\d{1,2}:\\d{2}(?::\\d{2})?\\s*(?i:AM|PM)?)");
 
     private final TokenService tokenService;
     private final AdminRepository adminRepository;
     private final DoctorRepository doctorRepository;
+    private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final DoctorService doctorService;
     private final PatientService patientService;
 
     public Service(TokenService tokenService, AdminRepository adminRepository,
-                   DoctorRepository doctorRepository, PatientRepository patientRepository,
+                   DoctorRepository doctorRepository, AppointmentRepository appointmentRepository, PatientRepository patientRepository,
                    DoctorService doctorService, PatientService patientService) {
         this.tokenService = tokenService;
         this.adminRepository = adminRepository;
         this.doctorRepository = doctorRepository;
+        this.appointmentRepository = appointmentRepository;
         this.patientRepository = patientRepository;
         this.doctorService = doctorService;
         this.patientService = patientService;
@@ -127,23 +136,153 @@ public class Service {
             if (doctorOpt.isEmpty()) {
                 return -1;
             }
+            Doctor doctor = doctorOpt.get();
 
+            String requestedTime = appointment.getAppointmentTime().format(DateTimeFormatter.ofPattern("HH:mm"));
             List<String> availableSlots = doctorService.getDoctorAvailability(
                     appointment.getDoctor().getId(),
                     appointment.getAppointmentTime().toLocalDate()
             );
 
-            String requestedTime = appointment.getAppointmentTime().format(DateTimeFormatter.ofPattern("HH:mm"));
             for (String slot : availableSlots) {
-                if (slot.startsWith(requestedTime)) {
+                if (isRequestedTimeInSlot(requestedTime, slot)) {
                     return 1;
                 }
             }
 
-            return 0;
+            // Fallback: validate against doctor's configured slots (for legacy/dirty slot text),
+            // then enforce hard collision check to avoid double-booking.
+            if (!isRequestedTimeConfiguredForDoctor(requestedTime, doctor)) {
+                return 0;
+            }
+
+            Long doctorId = appointment.getDoctor().getId();
+            Long appointmentId = appointment.getId();
+            if (appointmentId != null) {
+                boolean conflict = appointmentRepository.existsByDoctor_IdAndAppointmentTimeAndIdNot(
+                        doctorId, appointment.getAppointmentTime(), appointmentId);
+                return conflict ? 0 : 1;
+            }
+
+            boolean conflict = appointmentRepository.existsByDoctor_IdAndAppointmentTime(
+                    doctorId, appointment.getAppointmentTime());
+            return conflict ? 0 : 1;
+
         } catch (Exception e) {
             return 0;
         }
+    }
+
+    private boolean isRequestedTimeConfiguredForDoctor(String requestedTime, Doctor doctor) {
+        if (requestedTime == null || requestedTime.isBlank() || doctor == null || doctor.getAvailableTimes() == null) {
+            return false;
+        }
+
+        String normalizedRequested = normalizeTime(requestedTime);
+        if (normalizedRequested.isBlank()) {
+            return false;
+        }
+
+        for (String rawSlot : doctor.getAvailableTimes()) {
+            if (isRequestedTimeInSlot(normalizedRequested, rawSlot)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isRequestedTimeInSlot(String requestedTime, String slot) {
+        if (requestedTime == null || requestedTime.isBlank() || slot == null || slot.isBlank()) {
+            return false;
+        }
+
+        String normalizedRequested = normalizeTime(requestedTime);
+        if (normalizedRequested.isBlank()) {
+            return false;
+        }
+
+        String[] commaSplit = slot.split("[,;]");
+        for (String piece : commaSplit) {
+            String clean = piece == null ? "" : piece.trim();
+            if (clean.isEmpty()) continue;
+
+            String[] parts = clean.split("[-–]");
+            String start = parts.length > 0 ? parts[0].trim() : clean;
+            String normalizedStart = normalizeTime(extractFirstTimeToken(start));
+            if (requestedTime.equals(normalizedStart)) {
+                return true;
+            }
+            if (normalizedRequested.equals(normalizedStart)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private String normalizeTime(String value) {
+        if (value == null) return "";
+        String cleaned = sanitizeTimeToken(value);
+        if (cleaned.isEmpty()) return "";
+
+        try {
+            return java.time.LocalTime.parse(cleaned, DateTimeFormatter.ofPattern("H:mm"))
+                    .format(DateTimeFormatter.ofPattern("HH:mm"));
+        } catch (DateTimeParseException ignored) {
+            try {
+                return java.time.LocalTime.parse(cleaned, DateTimeFormatter.ofPattern("HH:mm"))
+                        .format(DateTimeFormatter.ofPattern("HH:mm"));
+            } catch (DateTimeParseException ignoredAgain) {
+                try {
+                    return java.time.LocalTime.parse(cleaned, DateTimeFormatter.ofPattern("H:mm:ss"))
+                            .format(DateTimeFormatter.ofPattern("HH:mm"));
+                } catch (DateTimeParseException ignoredThird) {
+                    try {
+                        return java.time.LocalTime.parse(cleaned, DateTimeFormatter.ofPattern("HH:mm:ss"))
+                                .format(DateTimeFormatter.ofPattern("HH:mm"));
+                    } catch (DateTimeParseException ignoredFourth) {
+                        try {
+                            return java.time.LocalTime.parse(cleaned.toUpperCase(Locale.ENGLISH),
+                                            DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH))
+                                    .format(DateTimeFormatter.ofPattern("HH:mm"));
+                        } catch (DateTimeParseException ignoredFifth) {
+                            try {
+                                return java.time.LocalTime.parse(cleaned.toUpperCase(Locale.ENGLISH),
+                                                DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH))
+                                        .format(DateTimeFormatter.ofPattern("HH:mm"));
+                            } catch (DateTimeParseException ignoredSixth) {
+                                return cleaned;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private String sanitizeTimeToken(String value) {
+        if (value == null) return "";
+        return value
+                .replace('\u2013', '-')  // en-dash
+                .replace('\u2014', '-')  // em-dash
+                .replace('\u00A0', ' ')  // non-breaking space
+                .replace('\u2007', ' ')
+                .replace('\u202F', ' ')
+                .replace("\"", "")
+                .replace("'", "")
+                .trim()
+                .replaceAll("\\s+", " ");
+    }
+
+    private String extractFirstTimeToken(String value) {
+        if (value == null) return "";
+        String cleaned = sanitizeTimeToken(value);
+        Matcher matcher = TIME_TOKEN_PATTERN.matcher(cleaned);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return cleaned;
     }
 
     @Transactional

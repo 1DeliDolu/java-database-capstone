@@ -35,9 +35,12 @@ async function initializePage() {
     const doctorSelect = document.getElementById("doctorName");
     const dateInput = document.getElementById("appointmentDate");
     const timeSelect = document.getElementById("appointmentTime");
+    const today = formatLocalDate(new Date());
 
     patientNameInput.value = patient.name || "You";
     populateDoctorOptions(doctorSelect, doctors);
+    dateInput.min = today;
+    timeSelect.disabled = true;
 
     if (defaultDoctorId) {
       doctorSelect.value = String(defaultDoctorId);
@@ -46,18 +49,20 @@ async function initializePage() {
       doctorSelect.value = String(doctors[0].id);
     }
 
-    if (defaultDate) {
+    if (defaultDate && defaultDate >= today) {
       dateInput.value = defaultDate;
+    } else {
+      dateInput.value = today;
     }
 
-    await loadAvailability(timeSelect, doctorSelect.value, dateInput.value, token, defaultTime);
+    await loadAvailability(timeSelect, doctorSelect.value, dateInput.value, token, defaultTime, doctors);
 
     doctorSelect.addEventListener("change", async () => {
-      await loadAvailability(timeSelect, doctorSelect.value, dateInput.value, token, null);
+      await loadAvailability(timeSelect, doctorSelect.value, dateInput.value, token, null, doctors);
     });
 
     dateInput.addEventListener("change", async () => {
-      await loadAvailability(timeSelect, doctorSelect.value, dateInput.value, token, null);
+      await loadAvailability(timeSelect, doctorSelect.value, dateInput.value, token, null, doctors);
     });
 
     document.getElementById("updateAppointmentForm").addEventListener("submit", async (e) => {
@@ -75,6 +80,11 @@ async function initializePage() {
       const startTime = selectedSlot.includes("-")
         ? selectedSlot.split("-")[0]
         : selectedSlot;
+      const selectedDateTime = new Date(`${date}T${startTime}:00`);
+      if (Number.isNaN(selectedDateTime.getTime()) || selectedDateTime <= new Date()) {
+        alert("Please select a future date and time.");
+        return;
+      }
 
       const updatedAppointment = {
         id: Number(appointmentId),
@@ -123,8 +133,9 @@ function populateDoctorOptions(selectEl, doctors) {
   });
 }
 
-async function loadAvailability(timeSelect, doctorId, selectedDate, token, preferredTime) {
+async function loadAvailability(timeSelect, doctorId, selectedDate, token, preferredTime, doctors) {
   timeSelect.innerHTML = '<option value="">Select time</option>';
+  timeSelect.disabled = true;
 
   if (!doctorId || !selectedDate) return;
 
@@ -135,7 +146,11 @@ async function loadAvailability(timeSelect, doctorId, selectedDate, token, prefe
     );
 
     const data = await response.json();
-    const slots = Array.isArray(data.availability) ? data.availability : [];
+    let slots = Array.isArray(data.availability) ? data.availability : [];
+    if (!slots.length) {
+      const doctor = (doctors || []).find((d) => String(d.id) === String(doctorId));
+      slots = Array.isArray(doctor?.availableTimes) ? doctor.availableTimes : [];
+    }
 
     slots.forEach((slot) => {
       const option = document.createElement("option");
@@ -144,13 +159,18 @@ async function loadAvailability(timeSelect, doctorId, selectedDate, token, prefe
       timeSelect.appendChild(option);
     });
 
-    if (!slots.length) return;
+    if (!slots.length) {
+      timeSelect.innerHTML = '<option value="">No available time</option>';
+      return;
+    }
 
     const preferred = normalizeTime(preferredTime);
     const matched = slots.find((slot) => normalizeTime(slot) === preferred);
     timeSelect.value = matched || slots[0];
+    timeSelect.disabled = false;
   } catch (error) {
     console.error("Failed to load doctor availability:", error);
+    timeSelect.innerHTML = '<option value="">No available time</option>';
   }
 }
 
@@ -159,4 +179,11 @@ function normalizeTime(rawTime) {
   const clean = String(rawTime).trim();
   if (clean.includes("-")) return clean.split("-")[0].slice(0, 5);
   return clean.slice(0, 5);
+}
+
+function formatLocalDate(dateObj) {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.project.back_end.models.Appointment;
 import com.project.back_end.services.AppointmentService;
+import com.project.back_end.services.DoctorService;
 import com.project.back_end.services.Service;
 
 import jakarta.validation.Valid;
@@ -30,10 +31,12 @@ public class AppointmentController {
 
     private final AppointmentService appointmentService;
     private final Service service;
+    private final DoctorService doctorService;
 
-    public AppointmentController(AppointmentService appointmentService, Service service) {
+    public AppointmentController(AppointmentService appointmentService, Service service, DoctorService doctorService) {
         this.appointmentService = appointmentService;
         this.service = service;
+        this.doctorService = doctorService;
     }
 
     /**
@@ -125,6 +128,18 @@ public class AppointmentController {
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         } else if (appointmentValidation == 0) {
             response.put("message", "Appointment time is not available");
+            try {
+                if (appointment.getDoctor() != null && appointment.getDoctor().getId() != null && appointment.getAppointmentTime() != null) {
+                    response.put("doctorId", appointment.getDoctor().getId());
+                    response.put("requestedTime", appointment.getAppointmentTime().toString());
+                    response.put("availableSlots", doctorService.getDoctorAvailability(
+                            appointment.getDoctor().getId(),
+                            appointment.getAppointmentTime().toLocalDate()
+                    ));
+                }
+            } catch (Exception ignored) {
+                // Keep original error message even if debug fields fail
+            }
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
         

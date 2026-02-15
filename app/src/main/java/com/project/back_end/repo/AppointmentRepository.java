@@ -55,4 +55,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("SELECT a FROM Appointment a WHERE LOWER(a.doctor.name) LIKE LOWER(CONCAT('%', :doctorName, '%')) " +
            "AND a.patient.id = :patientId AND a.status = :status")
     List<Appointment> filterByDoctorNameAndPatientIdAndStatus(String doctorName, Long patientId, int status);
+
+    boolean existsByDoctor_IdAndAppointmentTime(Long doctorId, LocalDateTime appointmentTime);
+
+    boolean existsByDoctor_IdAndAppointmentTimeAndIdNot(Long doctorId, LocalDateTime appointmentTime, Long id);
 }

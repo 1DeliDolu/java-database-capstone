@@ -3,13 +3,18 @@ package com.project.back_end.services;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +28,8 @@ import com.project.back_end.repo.DoctorRepository;
 
 @Service
 public class DoctorService {
+    private static final Pattern TIME_TOKEN_PATTERN =
+            Pattern.compile("(\\d{1,2}:\\d{2}(?::\\d{2})?\\s*(?i:AM|PM)?)");
 
     private final DoctorRepository doctorRepository;
     private final AppointmentRepository appointmentRepository;
@@ -61,11 +68,17 @@ public class DoctorService {
             
             var appointments = appointmentRepository.findByDoctorIdAndAppointmentTimeBetween(
                 doctorId, startOfDay, endOfDay);
+            LocalDate today = LocalDate.now();
+            LocalTime now = LocalTime.now();
             
             // Base slots should come from doctor's configured availability
-            List<String> baseSlots = doctor.getAvailableTimes();
+            List<String> baseSlots = normalizeSlots(doctor.getAvailableTimes());
             if (baseSlots == null || baseSlots.isEmpty()) {
                 for (int hour = 8; hour < 17; hour++) {
+                    LocalTime candidate = LocalTime.of(hour, 0);
+                    if (date.isEqual(today) && !candidate.isAfter(now)) {
+                        continue;
+                    }
                     availableSlots.add(String.format("%02d:00", hour));
                 }
                 return availableSlots;
@@ -80,7 +93,12 @@ public class DoctorService {
 
             for (String slot : baseSlots) {
                 String slotStart = extractStartTime(slot);
-                if (!bookedStartTimes.contains(slotStart)) {
+                String normalizedSlotStart = normalizeTimeText(slotStart);
+                LocalTime slotStartTime = parseLocalTimeFlexible(normalizedSlotStart);
+                if (date.isEqual(today) && slotStartTime != null && !slotStartTime.isAfter(now)) {
+                    continue;
+                }
+                if (!bookedStartTimes.contains(normalizedSlotStart)) {
                     availableSlots.add(slot);
                 }
             }
@@ -96,11 +114,89 @@ public class DoctorService {
             return "";
         }
 
-        String normalized = slot.trim();
-        if (normalized.contains("-")) {
-            return normalized.split("-")[0].trim();
+        String normalized = sanitizeSlotText(slot);
+        if (normalized.contains("-") || normalized.contains("–")) {
+            return normalizeTimeText(extractFirstTimeToken(normalized.split("[-–]")[0].trim()));
         }
+        return normalizeTimeText(extractFirstTimeToken(normalized));
+    }
+
+    private List<String> normalizeSlots(List<String> rawSlots) {
+        List<String> normalized = new ArrayList<>();
+        if (rawSlots == null) {
+            return normalized;
+        }
+
+        for (String raw : rawSlots) {
+            if (raw == null || raw.isBlank()) {
+                continue;
+            }
+
+            // Supports both ["09:00-10:00", "10:00-11:00"] and ["09:00-10:00, 10:00-11:00"]
+            String[] pieces = raw.split("[,;]");
+            for (String piece : pieces) {
+                String cleaned = sanitizeSlotText(piece);
+                if (!cleaned.isEmpty()) {
+                    normalized.add(cleaned);
+                }
+            }
+        }
+
         return normalized;
+    }
+
+    private String normalizeTimeText(String value) {
+        LocalTime parsed = parseLocalTimeFlexible(value);
+        if (parsed == null) {
+            return value == null ? "" : value.trim();
+        }
+        return parsed.format(DateTimeFormatter.ofPattern("HH:mm"));
+    }
+
+    private LocalTime parseLocalTimeFlexible(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        String cleaned = sanitizeSlotText(value);
+        String upper = cleaned.toUpperCase(Locale.ENGLISH);
+        String[] patterns = {"H:mm", "HH:mm", "H:mm:ss", "HH:mm:ss", "h:mm a", "hh:mm a"};
+        for (String pattern : patterns) {
+            try {
+                if (pattern.contains("a")) {
+                    return LocalTime.parse(upper, DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH));
+                }
+                return LocalTime.parse(cleaned, DateTimeFormatter.ofPattern(pattern));
+            } catch (DateTimeParseException ignored) {
+                // Try next format
+            }
+        }
+
+        return null;
+    }
+
+    private String sanitizeSlotText(String value) {
+        if (value == null) return "";
+        return value
+                .replace('\u2013', '-')
+                .replace('\u2014', '-')
+                .replace('\u00A0', ' ')
+                .replace('\u2007', ' ')
+                .replace('\u202F', ' ')
+                .replace("\"", "")
+                .replace("'", "")
+                .trim()
+                .replaceAll("\\s+", " ");
+    }
+
+    private String extractFirstTimeToken(String value) {
+        if (value == null) return "";
+        String cleaned = sanitizeSlotText(value);
+        Matcher matcher = TIME_TOKEN_PATTERN.matcher(cleaned);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return cleaned;
     }
 
     /**

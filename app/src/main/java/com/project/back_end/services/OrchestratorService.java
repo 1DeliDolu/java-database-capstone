@@ -1,6 +1,7 @@
 package com.project.back_end.services;
 
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -181,7 +182,7 @@ public class OrchestratorService {
             
             // Check if requested time matches any available slot
             for (String slot : availableSlots) {
-                if (slot.startsWith(requestedTime)) {
+                if (isRequestedTimeInSlot(requestedTime, slot)) {
                     return 1; // Valid appointment time
                 }
             }
@@ -190,6 +191,44 @@ public class OrchestratorService {
             
         } catch (Exception e) {
             return 0;
+        }
+    }
+
+    private boolean isRequestedTimeInSlot(String requestedTime, String slot) {
+        if (requestedTime == null || requestedTime.isBlank() || slot == null || slot.isBlank()) {
+            return false;
+        }
+
+        String[] commaSplit = slot.split(",");
+        for (String piece : commaSplit) {
+            String clean = piece == null ? "" : piece.trim();
+            if (clean.isEmpty()) continue;
+
+            String start = clean.contains("-") ? clean.split("-")[0].trim() : clean;
+            String normalizedStart = normalizeTime(start);
+            if (requestedTime.equals(normalizedStart)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private String normalizeTime(String value) {
+        if (value == null) return "";
+        String cleaned = value.trim();
+        if (cleaned.isEmpty()) return "";
+
+        try {
+            return java.time.LocalTime.parse(cleaned, DateTimeFormatter.ofPattern("H:mm"))
+                    .format(DateTimeFormatter.ofPattern("HH:mm"));
+        } catch (DateTimeParseException ignored) {
+            try {
+                return java.time.LocalTime.parse(cleaned, DateTimeFormatter.ofPattern("HH:mm"))
+                        .format(DateTimeFormatter.ofPattern("HH:mm"));
+            } catch (DateTimeParseException ignoredAgain) {
+                return cleaned;
+            }
         }
     }
 

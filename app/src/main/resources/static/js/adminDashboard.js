@@ -315,9 +315,7 @@ window.adminAddDoctor = async function () {
   if (!token) return;
 
   try {
-    const selectedName = document.getElementById('doctorName')?.value?.trim() || '';
-    const customName = document.getElementById('doctorNameCustom')?.value?.trim() || '';
-    const name = selectedName === '__custom__' ? customName : selectedName;
+    const name = document.getElementById('doctorName')?.value?.trim() || '';
     const specialty = document.getElementById('specialization')?.value?.trim() || '';
     const email = document.getElementById('doctorEmail')?.value?.trim() || '';
     const password = document.getElementById('doctorPassword')?.value?.trim() || '';
@@ -394,36 +392,12 @@ window.renderAddDoctorList = function () {
   `).join('');
 };
 
-window.populateDoctorNameDropdown = function () {
-  const select = document.getElementById('doctorName');
-  if (!select) return;
-
-  const names = Array.from(
-    new Set((cache.doctors || []).map((d) => (d.name || '').trim()).filter(Boolean))
-  ).sort((a, b) => a.localeCompare(b));
-
-  select.innerHTML = '<option value="">Select Doctor Name</option>';
-  names.forEach((name) => {
-    const option = document.createElement('option');
-    option.value = name;
-    option.textContent = name;
-    select.appendChild(option);
-  });
-
-  const customOption = document.createElement('option');
-  customOption.value = '__custom__';
-  customOption.textContent = 'Other (New Name)';
-  select.appendChild(customOption);
-};
-
 function clearAddDoctorForm() {
-  const ids = ['doctorName', 'doctorNameCustom', 'specialization', 'doctorEmail', 'doctorPassword', 'doctorPhone'];
+  const ids = ['doctorName', 'specialization', 'doctorEmail', 'doctorPassword', 'doctorPhone'];
   ids.forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  const customInput = document.getElementById('doctorNameCustom');
-  if (customInput) customInput.style.display = 'none';
   document.querySelectorAll('input[name="availability"]').forEach((input) => {
     input.checked = false;
   });
