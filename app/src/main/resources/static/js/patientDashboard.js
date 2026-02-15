@@ -19,8 +19,7 @@
 import { getDoctors, filterDoctors } from "./services/doctorServices.js";
 import { createDoctorCard } from "./components/doctorCard.js";
 import { patientSignup, patientLogin } from "./services/patientServices.js";
-
-// Note: openModal and selectRole are assumed to be available globally
+import { openModal } from "./components/modals.js";
 
 /**
  * Initialize dashboard when DOM is loaded
@@ -34,9 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupBtn = document.getElementById("patientSignup");
   if (signupBtn) {
     signupBtn.addEventListener("click", () => {
-      if (typeof openModal === "function") {
-        openModal("patientSignup");
-      }
+      openModal("patientSignup");
     });
   }
 
@@ -44,9 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const loginBtn = document.getElementById("patientLogin");
   if (loginBtn) {
     loginBtn.addEventListener("click", () => {
-      if (typeof openModal === "function") {
-        openModal("patientLogin");
-      }
+      openModal("patientLogin");
     });
   }
 
