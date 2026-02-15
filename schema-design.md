@@ -1,3 +1,212 @@
+## 📘 Okuma: JPA ve Anotasyonlar: Örnekler 
+
+**Tahmini süre:** 5 dk 
+
+---
+
+## 🎯 Öğrenme Hedefleri 
+
+Bu okumanın sonunda şunları yapabileceksiniz: 
+
+* Java Persistence API’yi (*JPA*) açıklamak
+* `@Entity`, `@Id`, `@GeneratedValue` ve `@Transient` dâhil önemli anotasyonları uygulamak 
+
+---
+
+## 🧩 Giriş 
+
+Java Persistence API (*JPA*), Java’da nesne-ilişkisel eşleme (*ORM*) için standart API’dir. Geliştiricilerin Java sınıflarını veritabanı tablolarına eşlemesine olanak tanır; böylece SQL gerekmeksizin basit Java nesneleri kullanarak ilişkisel verilerle etkileşim kurabilirsiniz. 
+
+JPA yalnızca bir spesifikasyondur; bu nedenle bir implementasyona ihtiyaç duyar. Çoğu Spring Boot projesinde varsayılan implementasyon *Hibernate*’dir. 
+
+JPA ile, `INSERT`, `UPDATE` veya `SELECT` sorgularını manuel olarak yazmak yerine `Doctor`, `Patient` ve `Appointment` gibi anotasyonlarla işaretlenmiş sınıflar oluşturursunuz; gerisini *Spring Data JPA* halleder. 
+
+---
+
+## ✅ Veri Doğrulama Neden Önemlidir? 
+
+Veri veritabanına ulaşmadan önce ve iş mantığında kullanılmasından çok daha önce, verinin geçerli, eksiksiz ve güvenli olduğundan emin olmak istersiniz. Doğrulama kuralları şunları zorunlu kılar: 
+
+* **Gerekli alanlar**
+  Örnek: Kullanıcı adı null olmamalıdır
+* **Biçim kuralları**
+  Örnek: E-posta geçerli olmalıdır
+* **Uzunluk kısıtları**
+  Örnek: İsim 3–100 karakter olmalıdır
+* **Mantıksal kısıtlar**
+  Örnek: Tarih gelecekte olmalıdır 
+
+Bu, uygulamanızı kötü veriden korur, hataları azaltır ve kullanıcı deneyimini iyileştirir. 
+
+Spring Boot, bu kuralları anotasyonlar üzerinden uygulamak için *Bean Validation API*’nin (javax.validation veya jakarta.validation) referans implementasyonu olan *Hibernate Validator*’u kullanır. 
+
+---
+
+## 🏷️ Temel Anotasyonlar 
+
+| Anotasyon                   | Amaç                                                            |
+| --------------------------- | --------------------------------------------------------------- |
+| `@Entity`                   | Sınıfı veritabanına eşlenen bir varlık (entity) olarak bildirir |
+| `@Id`                       | Birincil anahtarı işaretler                                     |
+| `@GeneratedValue`           | Birincil anahtarı otomatik üretir                               |
+| `@NotNull`                  | Alan null olmamalıdır                                           |
+| `@Size(min, max)`           | String uzunluk kısıtı                                           |
+| `@Email`                    | Alan geçerli bir e-posta adresi olmalıdır                       |
+| `@Pattern(regex)`           | Alan verilen düzenli ifadeyle eşleşmelidir                      |
+| `@JsonProperty(WRITE_ONLY)` | Hassas alanları (parolalar) JSON çıktısından gizler             |
+| `@ManyToOne`                | Çoktan-bire ilişkiyi tanımlar                                   |
+| `@Future`                   | Tarih/saat gelecekte olmalıdır                                  |
+| `@Transient`                | Alan veritabanına kaydedilmemelidir                             |
+
+---
+
+## 👤 Örnek 1: Admin Modeli 
+
+Bu basit model, bir varlığın nasıl tanımlanacağını ve hassas verinin nasıl korunacağını gösterir: 
+
+```java
+@Entity
+public class Admin {
+ @Id
+ @GeneratedValue(strategy = GenerationType.IDENTITY)
+ private Long id;
+ @NotNull(message = "Username cannot be null")
+ private String username;
+ @NotNull
+ @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+ private String password;
+ // Getters and setters
+}
+```
+
+* `@Entity` bu sınıfı bir veritabanı tablosuna eşler
+* `@JsonProperty(WRITE_ONLY)` parolanın API yanıtlarında asla açığa çıkmamasını sağlar
+* `@NotNull` gerekli alanların boş bırakılmamasını sağlar 
+
+---
+
+## 🩺 Örnek 2: Validasyonlu Doctor 
+
+```java
+@Entity
+public class Doctor {
+ @Id
+ @GeneratedValue(strategy = GenerationType.IDENTITY)
+ private Long id;
+ @NotNull
+ @Size(min = 3, max = 100)
+ private String name;
+ @NotNull
+ @Size(min = 3, max = 50)
+ private String specialty;
+ @Email
+ @NotNull
+ private String email;
+ @Size(min = 6)
+ @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+ private String password;
+ @Pattern(regexp = "\\d{10}")
+ private String phone;
+ @ElementCollection
+ private List<String> availableTimes;
+}
+```
+
+Alan seviyesinde doğrulama, veri kalitesini sağlar. `@Email`, `@Size` ve `@Pattern` yapı (structure) uygular. `@ElementCollection`, string gibi basit değerlerin bir listesini ayrı bir tabloda saklamak için kullanılır. 
+
+---
+
+## 🗓️ Örnek 3: İlişkiler ve Transient Mantık ile Appointment 
+
+```java
+@Entity
+public class Appointment {
+ @Id
+ @GeneratedValue(strategy = GenerationType.IDENTITY)
+ private Long id;
+ @ManyToOne
+ @NotNull
+ private Doctor doctor;
+ @ManyToOne
+ @NotNull
+ private Patient patient;
+ @Future
+ private LocalDateTime appointmentTime;
+ private int status; // 0 = Scheduled, 1 = Completed
+ @Transient
+ public LocalDateTime getEndTime() {
+ return appointmentTime.plusHours(1);
+ }
+}
+```
+
+* `@ManyToOne`, randevu ile hem doktor hem de hasta arasındaki ilişkiyi tanımlar
+* `@Future`, planlama için mantıksal kısıtları zorunlu kılar
+* `@Transient`, `getEndTime()` metodunun veritabanına kaydedilmesini engeller 
+
+---
+
+## 📄 MongoDB Desteği: @Document Kullanımı 
+
+JPA ilişkisel veritabanlarıyla çalışırken, Spring Boot *Spring Data MongoDB* aracılığıyla MongoDB gibi NoSQL veritabanlarını da destekler. `@Entity` yerine `@Document` kullanırsınız. 
+
+```java
+@Document(collection = "prescriptions")
+public class Prescription {
+ @Id
+ private String id;
+ @NotNull
+ @Size(min = 3, max = 100)
+ private String patientName;
+ @NotNull
+ private Long appointmentId;
+ @NotNull
+ @Size(min = 3, max = 100)
+ private String medication;
+ @Size(max = 200)
+ private String doctorNotes;
+}
+```
+
+MongoDB bunu JSON benzeri bir formatta belge (*document*) olarak saklar. JPA modellerindekiyle aynı doğrulama anotasyonlarını kullanmaya devam edersiniz. 
+
+---
+
+## 🔐 Validasyon ve Serileştirme Güvenliği 
+
+Veriyi bir REST API üzerinden dışarı açarken, parola gibi hassas alanları güvence altına almak kritiktir. Şunu kullanın: 
+
+```java
+@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+private String password;
+```
+
+Bu, alanın `POST` ile set edilmesine izin verir; ancak `GET` yanıtında asla döndürülmez. 
+
+Ayrıca, iç alanların JSON’a serileştirilmesini tamamen engellemek için `@JsonIgnore` kullanabilirsiniz. 
+
+---
+
+## 🧾 Özet 
+
+Bu okumada şunları öğrendiniz: 
+
+* Model sınıflarını oluşturma ve doğrulama:
+
+  * Varlıkları ilişkisel tablolara ve MongoDB belgelerine eşleme
+  * `@ManyToOne` gibi varlık ilişkilerini tanımlama
+  * `@NotNull`, `@Email` ve `@Pattern` gibi anotasyonlarla kullanıcı girdisini doğrulama
+  * `@Transient` kullanarak mantıksal alanları hariç tutma
+  * JSON serileştirme anotasyonlarıyla hassas alanları güvence altına alma 
+
+Bu desenler, gerçek dünya Java backend uygulamalarında temiz, güvenli ve tutarlı veri modellerinin belkemiğini oluşturur. 
+
+---
+
+## 👥 Yazar(lar) 
+
+Upkar Lidder
+IBM Skills Network Team 
 # Smart Clinic Management System - Database Schema Design
 
 ## MySQL Database Design
