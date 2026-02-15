@@ -1,15 +1,5 @@
 package com.project.back_end.services;
 
-import com.project.back_end.DTO.Login;
-import com.project.back_end.models.Doctor;
-import com.project.back_end.repo.AppointmentRepository;
-import com.project.back_end.repo.DoctorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -19,6 +9,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.project.back_end.DTO.Login;
+import com.project.back_end.models.Doctor;
+import com.project.back_end.repo.AppointmentRepository;
+import com.project.back_end.repo.DoctorRepository;
+
 @Service
 public class DoctorService {
 
@@ -26,7 +26,6 @@ public class DoctorService {
     private final AppointmentRepository appointmentRepository;
     private final TokenService tokenService;
 
-    @Autowired
     public DoctorService(DoctorRepository doctorRepository,
                         AppointmentRepository appointmentRepository,
                         TokenService tokenService) {
@@ -383,19 +382,23 @@ public class DoctorService {
                     boolean hasTimeSlot = false;
                     
                     for (var availableTime : doctor.getAvailableTimes()) {
-                        LocalTime time = availableTime.getStartTime();
-                        
-                        if ("AM".equalsIgnoreCase(amOrPm)) {
-                            // AM = 8:00 to 12:00
-                            if (time.isAfter(LocalTime.of(7, 59)) && time.isBefore(LocalTime.of(12, 1))) {
-                                hasTimeSlot = true;
-                                break;
-                            }
-                        } else if ("PM".equalsIgnoreCase(amOrPm)) {
-                            // PM = 12:00 to 17:00
-                            if (time.isAfter(LocalTime.of(11, 59)) && time.isBefore(LocalTime.of(17, 1))) {
-                                hasTimeSlot = true;
-                                break;
+                        // Parse the time string (format: "HH:mm" or "HH:mm-HH:mm")
+                        String[] timeParts = availableTime.split("-");
+                        if (timeParts.length > 0) {
+                            LocalTime time = LocalTime.parse(timeParts[0]);
+                            
+                            if ("AM".equalsIgnoreCase(amOrPm)) {
+                                // AM = 8:00 to 12:00
+                                if (time.isAfter(LocalTime.of(7, 59)) && time.isBefore(LocalTime.of(12, 1))) {
+                                    hasTimeSlot = true;
+                                    break;
+                                }
+                            } else if ("PM".equalsIgnoreCase(amOrPm)) {
+                                // PM = 12:00 to 17:00
+                                if (time.isAfter(LocalTime.of(11, 59)) && time.isBefore(LocalTime.of(17, 1))) {
+                                    hasTimeSlot = true;
+                                    break;
+                                }
                             }
                         }
                     }

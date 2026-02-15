@@ -1,15 +1,56 @@
 services:
-  mongo:
+  app:
+    build:
+      context: ./app
+    container_name: smart-clinic-app
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/cms?useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: D0cker!
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/prescriptions
+      SERVER_PORT: 8081
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: smart-clinic-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: D0cker!
+      MYSQL_DATABASE: cms
+    healthcheck:
+      test: ["CMD", "mysql", "-uroot", "-pD0cker!", "-e", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  mongodb:
     image: mongo:7
-    container_name: mongo
+    container_name: smart-clinic-mongo
     restart: unless-stopped
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: "D0cker!"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     volumes:
       - mongo_data:/data/db
 
 volumes:
+  mysql_data:
   mongo_data:

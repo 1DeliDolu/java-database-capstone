@@ -7,21 +7,21 @@ import java.time.LocalTime;
 public class AppointmentDTO {
     
     // Core appointment fields
-    private Long id;
-    private Long doctorId;
-    private String doctorName;
-    private Long patientId;
-    private String patientName;
-    private String patientEmail;
-    private String patientPhone;
-    private String patientAddress;
-    private LocalDateTime appointmentTime;
-    private int status;
+    private final Long id;
+    private final Long doctorId;
+    private final String doctorName;
+    private final Long patientId;
+    private final String patientName;
+    private final String patientEmail;
+    private final String patientPhone;
+    private final String patientAddress;
+    private final LocalDateTime appointmentTime;
+    private final int status;
     
     // Derived fields (calculated from appointmentTime)
-    private LocalDate appointmentDate;
-    private LocalTime appointmentTimeOnly;
-    private LocalDateTime endTime;
+    private final LocalDate appointmentDate;
+    private final LocalTime appointmentTimeOnly;
+    private final LocalDateTime endTime;
 
     /**
      * Constructor that initializes all fields and computes derived fields.

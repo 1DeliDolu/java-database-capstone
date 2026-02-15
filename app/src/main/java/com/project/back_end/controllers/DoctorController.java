@@ -4,7 +4,6 @@ import com.project.back_end.models.Doctor;
 import com.project.back_end.DTO.Login;
 import com.project.back_end.services.DoctorService;
 import com.project.back_end.services.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +15,12 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("${api.path}" + "doctor")
+@RequestMapping({"/doctor", "${api.path}" + "doctor"})
 public class DoctorController {
 
     private final DoctorService doctorService;
     private final Service service;
 
-    @Autowired
     public DoctorController(DoctorService doctorService, Service service) {
         this.doctorService = doctorService;
         this.service = service;
@@ -232,7 +230,7 @@ public class DoctorController {
             @PathVariable String time,
             @PathVariable String speciality) {
         
-        Map<String, Object> response = service.filterDoctor(name, time, speciality);
+        Map<String, Object> response = service.filterDoctor(name, speciality, time);
         
         if (response.get("doctors") != null) {
             return new ResponseEntity<>(response, HttpStatus.OK);

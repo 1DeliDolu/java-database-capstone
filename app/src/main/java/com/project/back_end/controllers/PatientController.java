@@ -3,7 +3,6 @@ package com.project.back_end.controllers;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,10 +24,16 @@ public class PatientController {
     private final PatientService patientService;
     private final Service service;
 
-    @Autowired
     public PatientController(PatientService patientService, Service service) {
         this.patientService = patientService;
         this.service = service;
+    }
+
+    @GetMapping
+    public ResponseEntity<Map<String, String>> patientEndpointInfo() {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "This is an API endpoint. Use POST /patient for signup, POST /patient/login for login, and GET /patient/{token} for details.");
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
@@ -150,5 +155,3 @@ public class PatientController {
         return service.filterPatient(condition, name, token);
     }
 }
-
-

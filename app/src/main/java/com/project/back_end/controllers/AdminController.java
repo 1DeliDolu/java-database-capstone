@@ -1,9 +1,11 @@
 package com.project.back_end.controllers;
 
 import java.util.Map;
+import java.util.HashMap;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,9 +20,15 @@ public class AdminController {
 
     private final Service service;
 
-    @Autowired
     public AdminController(Service service) {
         this.service = service;
+    }
+
+    @GetMapping("/login")
+    public ResponseEntity<Map<String, String>> adminLoginInfo() {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Use POST /api/admin/login with JSON body: {\"username\":\"...\",\"password\":\"...\"}");
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
@@ -34,4 +42,3 @@ public class AdminController {
         return service.validateAdmin(admin);
     }
 }
-

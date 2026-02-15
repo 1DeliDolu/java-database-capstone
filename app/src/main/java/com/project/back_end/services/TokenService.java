@@ -5,9 +5,7 @@ import com.project.back_end.repo.DoctorRepository;
 import com.project.back_end.repo.PatientRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +24,6 @@ public class TokenService {
 
     private static final long EXPIRATION_TIME = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
-    @Autowired
     public TokenService(AdminRepository adminRepository, DoctorRepository doctorRepository,
                        PatientRepository patientRepository) {
         this.adminRepository = adminRepository;
@@ -51,11 +48,12 @@ public class TokenService {
      */
     public String generateToken(String identifier) {
         try {
+            long nowMillis = System.currentTimeMillis();
             return Jwts.builder()
-                    .setSubject(identifier)
-                    .setIssuedAt(new Date())
-                    .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                    .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                    .subject(identifier)
+                    .issuedAt(new Date(nowMillis))
+                    .expiration(new Date(nowMillis + EXPIRATION_TIME))
+                    .signWith(getSigningKey())
                     .compact();
         } catch (Exception e) {
             throw new RuntimeException("Error generating token: " + e.getMessage());
@@ -68,16 +66,21 @@ public class TokenService {
      * @param token The JWT token from which to extract the identifier
      * @return The identifier (subject) extracted from the token
      */
-    public String extractEmail(String token) {
+    public String extractIdentifier(String token) {
         try {
             Claims claims = Jwts.parser()
-                    .setSigningKey(getSigningKey())
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
             return claims.getSubject();
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public String extractEmail(String token) {
+        return extractIdentifier(token);
     }
 
     /**
@@ -89,7 +92,7 @@ public class TokenService {
      */
     public boolean validateToken(String token, String user) {
         try {
-            String identifier = extractEmail(token);
+            String identifier = extractIdentifier(token);
             
             if (identifier == null) {
                 return false;

@@ -1,5 +1,9 @@
 package com.project.back_end.models;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -8,9 +12,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 /**
  * Appointment Model Class
@@ -179,16 +180,12 @@ public class Appointment {
      */
     @Transient
     public String getStatusName() {
-        switch (this.status) {
-            case 0:
-                return "Scheduled";
-            case 1:
-                return "Completed";
-            case 2:
-                return "Cancelled";
-            default:
-                return "Unknown";
-        }
+        return switch (this.status) {
+            case 0 -> "Scheduled";
+            case 1 -> "Completed";
+            case 2 -> "Cancelled";
+            default -> "Unknown";
+        };
     }
 
 

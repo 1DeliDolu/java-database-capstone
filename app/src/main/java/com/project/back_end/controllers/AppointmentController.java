@@ -1,26 +1,36 @@
 package com.project.back_end.controllers;
 
-import com.project.back_end.models.Appointment;
-import com.project.back_end.services.AppointmentService;
-import com.project.back_end.services.Service;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.project.back_end.models.Appointment;
+import com.project.back_end.services.AppointmentService;
+import com.project.back_end.services.Service;
+
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/appointments")
+@Validated
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
     private final Service service;
 
-    @Autowired
     public AppointmentController(AppointmentService appointmentService, Service service) {
         this.appointmentService = appointmentService;
         this.service = service;
@@ -53,7 +63,8 @@ public class AppointmentController {
         // Parse the date string to LocalDate
         try {
             LocalDate appointmentDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            return appointmentService.getAppointment(patientName, appointmentDate, token);
+            Map<String, Object> result = appointmentService.getAppointment(patientName, appointmentDate, token);
+            return new ResponseEntity<>(result, HttpStatus.OK);
         } catch (Exception e) {
             response.put("message", "Invalid date format. Use yyyy-MM-dd");
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
@@ -70,7 +81,7 @@ public class AppointmentController {
      */
     @PostMapping("/{token}")
     public ResponseEntity<Map<String, Object>> bookAppointment(
-            @RequestBody Appointment appointment,
+            @Valid @RequestBody Appointment appointment,
             @PathVariable String token) {
         
         Map<String, Object> response = new HashMap<>();
@@ -118,8 +129,8 @@ public class AppointmentController {
      * @return ResponseEntity with success or error message
      */
     @PutMapping("/{token}")
-    public ResponseEntity<Map<String, Object>> updateAppointment(
-            @RequestBody Appointment appointment,
+    public ResponseEntity<?> updateAppointment(
+            @Valid @RequestBody Appointment appointment,
             @PathVariable String token) {
         
         Map<String, Object> response = new HashMap<>();
@@ -144,7 +155,7 @@ public class AppointmentController {
      * @return ResponseEntity with success or error message
      */
     @DeleteMapping("/{id}/{token}")
-    public ResponseEntity<Map<String, Object>> cancelAppointment(
+    public ResponseEntity<?> cancelAppointment(
             @PathVariable Long id,
             @PathVariable String token) {
         
@@ -160,4 +171,5 @@ public class AppointmentController {
         // Cancel the appointment
         return appointmentService.cancelAppointment(id, token);
     }
+
 }

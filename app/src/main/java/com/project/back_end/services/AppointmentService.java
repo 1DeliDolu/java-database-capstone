@@ -1,15 +1,5 @@
 package com.project.back_end.services;
 
-import com.project.back_end.models.Appointment;
-import com.project.back_end.repo.AppointmentRepository;
-import com.project.back_end.repo.DoctorRepository;
-import com.project.back_end.repo.PatientRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -19,20 +9,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.project.back_end.models.Appointment;
+import com.project.back_end.models.Patient;
+import com.project.back_end.repo.AppointmentRepository;
+import com.project.back_end.repo.DoctorRepository;
+import com.project.back_end.repo.PatientRepository;
+
 @Service
 public class AppointmentService {
     
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
-    private final com.project.back_end.services.Service service;
+    private final OrchestratorService service;
     private final TokenService tokenService;
 
-    @Autowired
     public AppointmentService(AppointmentRepository appointmentRepository,
                             PatientRepository patientRepository,
                             DoctorRepository doctorRepository,
-                            com.project.back_end.services.Service service,
+                            OrchestratorService service,
                             TokenService tokenService) {
         this.appointmentRepository = appointmentRepository;
         this.patientRepository = patientRepository;
@@ -120,9 +120,19 @@ public class AppointmentService {
             
             // Extract patient ID from token
             String patientEmail = tokenService.extractEmail(token);
+            if (patientEmail == null || patientEmail.isEmpty()) {
+                response.put("message", "Invalid token");
+                return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+            }
+            Patient patient = patientRepository.findByEmail(patientEmail);
+
+            if (patient == null) {
+                response.put("message", "Patient not found");
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
             
             // Verify that the patient trying to cancel owns the appointment
-            if (!appointment.get().getPatient().getEmail().equals(patientEmail)) {
+            if (!appointment.get().getPatient().getId().equals(patient.getId())) {
                 response.put("message", "Unauthorized: You can only cancel your own appointments");
                 return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
             }
